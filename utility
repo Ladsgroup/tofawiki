@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+from tofawiki import tofawiki
+
+tofawiki.main()

@@ -1,0 +1,10 @@
+cache:
+  path: /home/amir/wtf/cache.json
+
+wsgi:
+  host: localhost:8080
+  application_root: ""
+  url_prefix: ""
+
+enwiki:
+  code_lang: 'en'
