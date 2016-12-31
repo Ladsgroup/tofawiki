@@ -88,4 +88,11 @@ ENV/
 # Rope project settings
 .ropeproject
 
+#pywikibot
 throttle.ctrl
+
+# flask
+apicache/
+
+# pycharm
+.idea/
