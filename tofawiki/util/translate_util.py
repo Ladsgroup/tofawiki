@@ -144,12 +144,12 @@ def seealsoer(entext, ensite, fasite, cache=None):
     if not res_see:
         return ''
     re_see2 = re.compile(r"\* *?\[\[(.+?)(?:\||\]\])")
-    text_see = u"\n\n==جستارهای وابسته=="
+    text_see = u"\n\n== جستارهای وابسته =="
 
     for line_see in re_see2.findall(res_see[0]):
         line_see2 = translator_taki(linker(line_see), ensite, fasite, True, cache)
         if line_see2:
             text_see += u"\n*" + line_see2
-    if text_see == u"\n\n==جستارهای وابسته==":
+    if text_see == u"\n\n== جستارهای وابسته ==":
         return u""
     return text_see
