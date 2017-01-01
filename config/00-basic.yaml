@@ -1,5 +1,5 @@
 cache:
-  path: /home/amir/wtf/cache.json
+  path: tofawiki/cache/data/file_cache.json
 
 wsgi:
   host: localhost:8080
