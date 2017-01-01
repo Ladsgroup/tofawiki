@@ -12,6 +12,7 @@ class Translate(Service):
         self.article = pywikibot.Page(self.site, article)
         self.faname = self.normalize_fa(faname)
         self.config = config
+        self.item = pywikibot.ItemPage()
 
     def validate(self):
         fapage = pywikibot.Page(pywikibot.Site('fa'), self.faname)
@@ -32,9 +33,9 @@ class Translate(Service):
             self.article.get()
         except pywikibot.NoPage:
             return {'error': 'Article in English Wikipedia does not exist'}
-        data = pywikibot.ItemPage.fromPage(self.article)
+        self.item = pywikibot.ItemPage.fromPage(self.article)
         try:
-            data.get()
+            self.item.get()
         except pywikibot.NoPage:
             return {'error': 'The item in Wikidata does not exist'}
 

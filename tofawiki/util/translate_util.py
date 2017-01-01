@@ -1,7 +1,7 @@
 import re
 import pywikibot
 
-# Discalimer: This codes are super old and creepy, we need to rewrite them altogether
+# Disclaimer: This codes are super old and creepy, we need to rewrite them altogether
 
 
 def linker(a):
