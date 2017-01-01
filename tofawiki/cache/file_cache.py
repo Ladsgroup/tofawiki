@@ -1,4 +1,5 @@
 import json
+import logging
 
 from .cache import Cache
 
@@ -12,6 +13,8 @@ class FileCache(Cache):
         if key not in self.values:
             res = self.get_value_from_file(key)
             if res is not None:
+                logger = logging.getLogger(__name__)
+                logger.debug('Got a key from cache')
                 self.values[key] = res
 
         return self.values.get(key)

@@ -1,5 +1,5 @@
 Flask
 Flask-Jsonpify
-pywikibot=2.0rc5
+pywikibot==3.0.dev0
 docopt
 yamlconf

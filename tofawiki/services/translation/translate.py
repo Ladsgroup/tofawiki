@@ -12,7 +12,7 @@ class Translate(Service):
         self.article = pywikibot.Page(self.site, article)
         self.faname = self.normalize_fa(faname)
         self.config = config
-        self.item = pywikibot.ItemPage()
+        self.item = None
 
     def validate(self):
         fapage = pywikibot.Page(pywikibot.Site('fa'), self.faname)

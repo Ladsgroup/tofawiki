@@ -172,7 +172,7 @@ def dater(a):
     a = re.sub(
         r"(January|February|March|April|May|June|July|August|September|October|November|December)"
         r" (\d+)(?:th|st|nd|rd)?, (\d+)(\D|$)",
-        r"\2 \1 \3\4", 
+        r"\2 \1 \3\4",
         a)
     b = a
     for month in months:

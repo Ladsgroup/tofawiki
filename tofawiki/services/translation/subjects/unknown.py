@@ -8,6 +8,8 @@ from ....util.translate_util import seealsoer, sortcat, catadder, dater, transla
 
 from jinja2 import Template
 from collections import defaultdict, OrderedDict
+from pywikibot.textlib import  extract_templates_and_params
+
 
 class UnknownSubject(Subject):
     def __init__(self, service):
@@ -16,6 +18,7 @@ class UnknownSubject(Subject):
         self.breaks = '\n\n'
         self.info = defaultdict(list)
         self.infobox = OrderedDict()
+        self.fasite = pywikibot.Site('fa')
 
     def get_lead(self):
         template = Template("'''{{ fa_name }}''' ({% raw %}{{lang-en|{% endraw %}{{en_name}}{% raw %}}}{% endraw %})")
@@ -25,7 +28,8 @@ class UnknownSubject(Subject):
 
     def get_infobox(self):
         res = ''
-        for i in pywikibot.extract_templates_and_params(self.service.article.text, strip=True):
+        # TODO: strip doesn't work in pywikibot 2.0rc5. We need to use master
+        for i in extract_templates_and_params(self.service.article.text, None, strip=True):
             if not self.infobox and "infobox" in i[0].lower():
                 for case in i[1]:
                     if case.strip() in self.infobox:
@@ -57,14 +61,14 @@ class UnknownSubject(Subject):
 
         for i in self.infobox:
             res += u"\n| " + i + u" = " + self.infobox[i]
-        return translator(res)
+        return translator(res, self.service.article.site, self.fasite, self.cache)
 
     def get_stub_type(self):
         return 'موضوع'
 
     def get_translation(self):
         try:
-            content = self.get_lead() + self.breaks + self.get_footer()
+            content = self.get_infobox() + '\n' + self.get_lead() + self.breaks + self.get_footer()
         except:
             return {'error': 'Unable to translate. Copy paste this for Amir: ' + traceback.format_exc()}
         return {'page_content': self.run_fixes(content)}
@@ -74,12 +78,11 @@ class UnknownSubject(Subject):
         enpage = self.service.article
         entext = enpage.get()
         faname = self.service.faname
-        fasite = pywikibot.Site('fa')
-        text = seealsoer(entext, enpage.site, fasite, self.cache)
-        text += u"\n\n== منابع ==\n{{پانویس|چپ‌چین=بله}}"
+        text = seealsoer(entext, enpage.site, self.fasite, self.cache)
+        text += self.breaks + u"== منابع ==\n{{پانویس|چپ‌چین=بله}}"
         text += u"\n*{{یادکرد-ویکی|پیوند =" + enpage.permalink().replace("&useskin=monobook", "") + \
-               u"|عنوان = " + enpage.title().replace(u"_", u" ") + \
-               u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}"
+                u"|عنوان = " + enpage.title().replace(u"_", u" ") + \
+                u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}"
         self.extract_info()
 
         if self.info[373] or self.info['twitter'] or self.info['facebook'] or self.info['official'] or 434 in self.info:
@@ -96,13 +99,13 @@ class UnknownSubject(Subject):
                 text += u"* {{facebook|" + self.info['facebook'] + u"}}\n"
             if self.info['twitter']:
                 text += u"* {{twitter|" + self.info['twitter'] + u"}}\n"
-        text += u"\n\n{{موضوع-خرد}}\n"
+        text += self.breaks + u"{{موضوع-خرد}}\n"
         if self.info['coord']:
             text += self.info['coord'][0] + "\n"
         text = text + sortcat(entext,
                               enpage.title().split(" (")[0], faname.split(" (")[0])
-        text = text + catadder(entext, enpage.site)
-        return text + u"\n\n[[en:%s]]" % enpage.title()
+        text = text + catadder(entext, enpage.site, self.fasite, self.cache)
+        return text + self.breaks + u"[[en:%s]]" % enpage.title()
 
     @staticmethod
     def run_fixes(text):
@@ -116,4 +119,4 @@ class UnknownSubject(Subject):
     def extract_info(self):
         for property_number in self.service.item.claims:
             for claim in self.service.item.claims[property_number]:
-                self.info[int(property_number.split('P'))].append(claim.getTarget())
+                self.info[int(property_number.split('P')[1])].append(claim.getTarget())
