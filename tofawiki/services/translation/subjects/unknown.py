@@ -1,12 +1,13 @@
 import pywikibot
 import traceback
+import re
 
 from .subject import Subject
 from ....cache.file_cache import FileCache
-from ....util.translate_util import seealsoer, sortcat, catadder
+from ....util.translate_util import seealsoer, sortcat, catadder, dater, translator
 
 from jinja2 import Template
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 class UnknownSubject(Subject):
     def __init__(self, service):
@@ -14,6 +15,7 @@ class UnknownSubject(Subject):
         self.service = service
         self.breaks = '\n\n'
         self.info = defaultdict(list)
+        self.infobox = OrderedDict()
 
     def get_lead(self):
         template = Template("'''{{ fa_name }}''' ({% raw %}{{lang-en|{% endraw %}{{en_name}}{% raw %}}}{% endraw %})")
@@ -22,7 +24,40 @@ class UnknownSubject(Subject):
             en_name=self.service.article.title())
 
     def get_infobox(self):
-        return ''
+        res = ''
+        for i in pywikibot.extract_templates_and_params(self.service.article.text, strip=True):
+            if not self.infobox and "infobox" in i[0].lower():
+                for case in i[1]:
+                    if case.strip() in self.infobox:
+                        continue
+                    arg = i[1][case]
+                    if re.search("term_?(?:start|end)\d*", case):
+                        arg = dater(arg)
+                    self.infobox[case.strip()] = arg
+            if "twitter" in i[0].lower():
+                if '1' in i[1]:
+                    self.info['twitter'] = i[1]['1']
+            if i[0].lower() == 'coord':
+                if 'title' in i[1].get('display', 'title'):
+                    coord = re.findall(r"(\{\{[Cc]oord *?\|.+?\}\})", self.service.article.text)
+                    if coord and "{{" not in coord[0]:
+                        self.info['coord'] = coord
+            if "imdb name" in i[0].lower():
+                if '1' in i[1]:
+                    self.info['imdb'] = i[1].get('id', "")
+            if "facebook" in i[0].lower():
+                if '1' in i[1]:
+                    self.info['facebook'] = i[1]['1']
+            if i[0].lower().startswith("official"):
+                if '1' in i[1]:
+                    self.info['official'] = i[1]['1']
+            if "youtube" in i[0].lower():
+                if '1' in i[1]:
+                    self.info['youtube'] = i[1]['1']
+
+        for i in self.infobox:
+            res += u"\n| " + i + u" = " + self.infobox[i]
+        return translator(res)
 
     def get_stub_type(self):
         return 'موضوع'
@@ -61,7 +96,7 @@ class UnknownSubject(Subject):
                 text += u"* {{facebook|" + self.info['facebook'] + u"}}\n"
             if self.info['twitter']:
                 text += u"* {{twitter|" + self.info['twitter'] + u"}}\n"
-        text  += u"\n\n{{موضوع-خرد}}\n"
+        text += u"\n\n{{موضوع-خرد}}\n"
         if self.info['coord']:
             text += self.info['coord'][0] + "\n"
         text = text + sortcat(entext,

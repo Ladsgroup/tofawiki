@@ -3,6 +3,19 @@ import pywikibot
 
 # Disclaimer: This codes are super old and creepy, we need to rewrite them altogether
 
+months = {"January": u"ژانویه",
+          "February": u"فوریه",
+          "March": u"مارس",
+          "April": u"آوریل",
+          "May": u"مه",
+          "June": u"ژوئن",
+          "July": u"ژوئیه",
+          "August": u"اوت",
+          "September": u"سپتامبر",
+          "October": u"اکتبر",
+          "November": u"نوامبر",
+          "December": u"دسامبر"}
+
 
 def linker(a):
     if not a:
@@ -153,3 +166,15 @@ def seealsoer(entext, ensite, fasite, cache=None):
     if text_see == u"\n\n== جستارهای وابسته ==":
         return u""
     return text_see
+
+
+def dater(a):
+    a = re.sub(
+        r"(January|February|March|April|May|June|July|August|September|October|November|December)"
+        r" (\d+)(?:th|st|nd|rd)?, (\d+)(\D|$)",
+        r"\2 \1 \3\4", 
+        a)
+    b = a
+    for month in months:
+        b = b.replace(month, months[month])
+    return en2fa(b)
