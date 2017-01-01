@@ -31,6 +31,7 @@ class UnknownSubject(Subject):
         # TODO: strip doesn't work in pywikibot 2.0rc5. We need to use master
         for i in extract_templates_and_params(self.service.article.text, None, strip=True):
             if not self.infobox and "infobox" in i[0].lower():
+                res += '{{' + i[0]
                 for case in i[1]:
                     if case.strip() in self.infobox:
                         continue
@@ -58,9 +59,10 @@ class UnknownSubject(Subject):
             if "youtube" in i[0].lower():
                 if '1' in i[1]:
                     self.info['youtube'] = i[1]['1']
-
-        for i in self.infobox:
-            res += u"\n| " + i + u" = " + self.infobox[i]
+        if self.infobox:
+            for i in self.infobox:
+                res += u"\n| " + i + u" = " + self.infobox[i]
+            res += '\n}}'
         return translator(res, self.service.article.site, self.fasite, self.cache)
 
     def get_stub_type(self):

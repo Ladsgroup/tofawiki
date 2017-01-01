@@ -1,5 +1,7 @@
+from flask import Response
 
 from ...services.translation.translate import Translate
+
 import json
 
 
@@ -13,6 +15,9 @@ def configure(bp, config):
     def translation_service(wiki, article, faname):
         # We use disposable services, we do caching other ways
         service = Translate(wiki, article, faname, config)
-        return json.dumps(service.run())
+        resp = Response(json.dumps(service.run()),
+                        mimetype="application/json")
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
 
     return bp

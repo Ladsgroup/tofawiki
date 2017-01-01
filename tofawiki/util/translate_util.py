@@ -60,6 +60,8 @@ def en2fa(i):
 
 
 def translator(a, ensite, fasite, cache):
+    if not a:
+        return ''
     b = a
     rerf = re.compile("\[\[(.+?)(?:\||\]\])")
     for name in rerf.findall(a):
