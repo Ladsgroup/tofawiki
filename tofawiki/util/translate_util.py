@@ -180,3 +180,11 @@ def dater(a):
     for month in months:
         b = b.replace(month, months[month])
     return en2fa(b)
+
+
+def get_lang(a, b):
+    b = b.replace(u"_", u" ").split(" (")[0]
+    if re.search(u"\{\{lang(\-|\|)", a):
+        return u"{{lang" + a.split("{{lang")[1].split("}}")[0] + u"}}"
+    else:
+        return u"{{lang-en|" + b + u"}}"

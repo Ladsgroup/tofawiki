@@ -4,11 +4,11 @@ import re
 
 from .subject import Subject
 from ....cache.file_cache import FileCache
-from ....util.translate_util import seealsoer, sortcat, catadder, dater, translator
+from ....util.translate_util import seealsoer, sortcat, catadder, dater, translator, get_lang
 
 from jinja2 import Template
 from collections import defaultdict, OrderedDict
-from pywikibot.textlib import  extract_templates_and_params
+from pywikibot.textlib import extract_templates_and_params
 
 
 class UnknownSubject(Subject):
@@ -21,10 +21,11 @@ class UnknownSubject(Subject):
         self.fasite = pywikibot.Site('fa')
 
     def get_lead(self):
-        template = Template("'''{{ fa_name }}''' ({% raw %}{{lang-en|{% endraw %}{{en_name}}{% raw %}}}{% endraw %})")
+        lang = get_lang(self.service.article.text.split("\n==")[0], self.service.article.title().split(" (")[0])
+        template = Template("'''{{ fa_name }}''' ({{ lang }})")
         return template.render(
             fa_name=self.service.faname.split(' (')[0],
-            en_name=self.service.article.title())
+            lang=lang)
 
     def get_infobox(self):
         res = ''
