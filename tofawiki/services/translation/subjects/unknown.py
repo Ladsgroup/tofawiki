@@ -3,7 +3,7 @@ import traceback
 import re
 
 from .subject import Subject
-from ....cache.file_cache import FileCache
+from ....cache.redis_cache import RedisCache
 from ....util.translate_util import seealsoer, sortcat, catadder, dater, translator, get_lang
 
 from jinja2 import Template
@@ -13,7 +13,7 @@ from pywikibot.textlib import extract_templates_and_params
 
 class UnknownSubject(Subject):
     def __init__(self, service):
-        self.cache = FileCache(service.config['cache']['path'])
+        self.cache = RedisCache(service.config['cache']['redis_cache'])
         self.service = service
         self.breaks = '\n\n'
         self.info = defaultdict(list)

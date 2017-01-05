@@ -96,3 +96,6 @@ apicache/
 
 # pycharm
 .idea/
+
+# redis
+*.rdb
