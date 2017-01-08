@@ -14,7 +14,7 @@ def requirements(fname):
 
 setup(
     name="tofawiki",
-    version="0.0.1",  # Update in wikilabels/__init__.py
+    version="0.0.2",  # Update in tofawiki/__init__.py
     author="Amir Sarabadani",
     author_email="ladsgroup@gmail.com",
     description="A service to bring articles easily",

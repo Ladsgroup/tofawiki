@@ -65,8 +65,8 @@ def translator(a, ensite, fasite, cache):
     b = a
     rerf = re.compile("\[\[(.+?)(?:\||\]\])")
     for name in rerf.findall(a):
-        if cache.get_value('translate:enwiki:linktrans:' + name):
-            res = cache.get_value('translate:enwiki:linktrans:' + name)
+        if cache.get_value('translate:fawiki:enwiki:linktrans:' + name):
+            res = cache.get_value('translate:fawiki:enwiki:linktrans:' + name)
             b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
                        re.escape(name), res, b)
         else:
@@ -84,7 +84,7 @@ def translator(a, ensite, fasite, cache):
             for iwpage in iwpages:
                 if iwpage.site == fasite:
                     if cache:
-                        cache.write_new_cache('translate:enwiki:linktrans:' + name, linker(iwpage.canonical_title()))
+                        cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(iwpage.canonical_title()))
                     b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
                                re.escape(name), linker(iwpage.canonical_title()), b)
     return b
@@ -93,8 +93,8 @@ def translator(a, ensite, fasite, cache):
 def translator_taki(a, ensite, fasite, strict=False, cache=None):
     b = a
     for name in re.findall("\[\[(.+?)(?:\||\]\])", a):
-        if cache and cache.get_value('translate:enwiki:linktrans:' + name):
-            res = cache.get_value('translate:enwiki:linktrans:' + name)
+        if cache and cache.get_value('translate:fawiki:enwiki:linktrans:' + name):
+            res = cache.get_value('translate:fawiki:enwiki:linktrans:' + name)
             b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
                        re.escape(name), res, b)
         else:
@@ -111,7 +111,7 @@ def translator_taki(a, ensite, fasite, strict=False, cache=None):
             for iwpage in iwpages:
                 if iwpage.site == fasite:
                     if cache:
-                        cache.write_new_cache('translate:enwiki:linktrans:' + name, linker(iwpage.canonical_title()))
+                        cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(iwpage.canonical_title()))
                     return linker(iwpage.canonical_title())
     if strict:
         return ""
@@ -138,7 +138,7 @@ def sortcat(entext, entitle, title):
 
 def catadder(entext, ensite, fasite, cache=None):
     cats = u""
-    cache_prefix = 'translate:enwiki:cattrans:'
+    cache_prefix = 'translate:fawiki:enwiki:cattrans:'
     for name in re.findall(r'\[\[[Cc]ategory:(.+?)(?:\]\]|\|)', entext):
         if cache and cache.get_value(cache_prefix + name):
             res = cache.get_value(cache_prefix + name)
@@ -150,6 +150,7 @@ def catadder(entext, ensite, fasite, cache=None):
                     if cache:
                         cache.write_new_cache(cache_prefix + name, iwpage.canonical_title())
                     cats = cats + u"\n[[" + iwpage.canonical_title() + "]]"
+                    # TODO: we should add a break here to get it much faster *but* it might get out of the outer loop
     return cats
 
 
@@ -184,7 +185,76 @@ def dater(a):
 
 def get_lang(a, b):
     b = b.replace(u"_", u" ").split(" (")[0]
-    if re.search(u"\{\{lang(\-|\|)", a):
+    if re.search(u"\{\{lang(-|\|)", a):
         return u"{{lang" + a.split("{{lang")[1].split("}}")[0] + u"}}"
     else:
         return u"{{lang-en|" + b + u"}}"
+
+
+def data2fa(number, repo, cache=None, strict=False, ff=False):
+    cache_key = 'translate:fawiki:wikidatawiki:linktrans:'
+    if strict:
+        cache_key += 'strict:'
+    else:
+        cache_key += 'no_strict:'
+    cache_key += str(number)
+    if cache and cache.get_value(cache_key):
+        return cache.get_value(cache_key)
+    item = pywikibot.ItemPage(repo, 'Q%d' % int(number))
+    try:
+        item.get()
+    except:
+        return ''
+    if isinstance(item.sitelinks, list):
+        item.sitelinks = {}
+    if 'fawiki' in item.sitelinks:
+        name = item.sitelinks['fawiki']
+        if cache:
+            cache.write_new_cache(cache_key, name)
+        return name
+    if strict:
+        return ''
+    if isinstance(item.labels, list):
+        item.labels = {}
+    if 'fa' in item.labels:
+        name = item.labels['fa']
+        if cache:
+            cache.write_new_cache(cache_key, name)
+        return name
+    if not ff:
+        return ''
+    try:
+        return item.labels['en']
+    except:
+        return ''
+
+
+def occu(a, b, ensite, fasite, repo, cache=None):
+    listoc = []
+    if a:
+        for i in a:
+            ff = data2fa(int(i), repo, cache)
+            if ff:
+                listoc.append(ff)
+    if not listoc:
+        links = translator(u"[[" + b.replace(", ", u"]][[") + u"]]", ensite, fasite, cache)
+        for i in re.findall("\[\[(.+?)(?:\]\]|\|)", links):
+            if re.search(u"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]", i):
+                if i:
+                    listoc.append(i)
+    textg = ''
+    try:
+        fff = listoc[-2]
+    except IndexError:
+        fff = None
+    for i in listoc:
+        textg += u"[[" + i + u"]]، "
+        if i == fff:
+            textg += u"و "
+    if textg.count(u"،") == 1:
+        textg = textg.replace(u"،", u"")
+    return textg[:-2] + u" "
+
+def officefixer(text):
+    #TODO: Make this work
+    return text

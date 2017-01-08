@@ -3,7 +3,7 @@ import pywikibot
 
 from ...services.service import Service
 from .subjects.unknown import UnknownSubject
-
+from .subjects.human import HumanSubject
 
 class Translate(Service):
     def __init__(self, wiki, article, faname, config):
@@ -49,9 +49,21 @@ class Translate(Service):
         return self.subject.get_translation()
 
     def get_subject_callback(self):
+        instances = self.get_instances()
+        if 5 in instances or 'infobox person' in self.article.text.lower():
+            return HumanSubject
         return UnknownSubject
 
     @staticmethod
     def normalize_fa(faname):
         return re.sub("([‌۱۲۳۴۵۶۷۸۹۰\)\(ادذرزژو])‌", "\1", faname).replace(
             u"ي", u"ی").replace(u"ك", u"ک")
+
+    def get_instances(self):
+        res = []
+        for claim in self.item.claims.get('P31', []):
+            try:
+                res.append(int(claim.getTarget().getID().split('Q')[1]))
+            except:
+                continue
+        return res
