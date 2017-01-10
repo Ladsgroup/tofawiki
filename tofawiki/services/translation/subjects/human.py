@@ -133,15 +133,18 @@ class HumanSubject(UnknownSubject):
                         awardstext += u"[[" + awname + u"]]"
 
         if "occupation" in self.infobox:
-            occupation = self.infobox["occupation"]
+            long_occupation = self.infobox["occupation"]
         self.date_cleaner('birth_date')
         self.date_cleaner('death_date')
         if "music" in self.infobox_title.lower():
             long_occupation = u"موسیقی‌دان"
+            occupation = u"موسیقی‌دان"
         elif "military person" in self.infobox_title.lower():
             long_occupation = u"فرد نظامی"
+            occupation = u"فرد نظامی"
         elif "officeholder" in self.infobox_title.lower():
             long_occupation = u"سیاست‌مدار"
+            occupation = u"سیاست‌مدار"
         elif re.search(
                 "(sportsperson|swim|football|soccer|rugby|tennis|cyclist|f1 driver|baseball|basketball| mlb| nba)",
                 self.infobox_title.lower()):
@@ -157,12 +160,16 @@ class HumanSubject(UnknownSubject):
             for i in occupations:
                 if i in self.infobox_title.lower():
                     long_occupation = linker(occupations[i])
+                    occupation = occupations[i]
         elif "adult biography" in self.infobox_title.lower():
             long_occupation = u"بازیگر پورنوگرافی"
+            occupation = u"بازیگر پورنوگرافی"
         elif " saint" in self.infobox_title.lower():
             long_occupation = u"قدیس مسیحی"
+            occupation = u"قدیس مسیحی"
         elif "scientist" in self.infobox_title.lower():
             long_occupation = u"دانشمند"
+            occupation = u"دانشمند"
             fields = []
             if 101 in self.info:
                 fields = [linker(data2fa(self.info[101][0], repo=self.fasite.data_repository(), cache=self.cache))]
@@ -225,6 +232,8 @@ class HumanSubject(UnknownSubject):
             if yearfa:
                 self.infobox['death_date'] = yearfa[0]
 
+        if not long_occupation.strip() and occupation.strip():
+            long_occupation = translator(occupation, self.service.article.site, self.fasite, self.cache)
         if long_occupation.strip():
             self.occupation = long_occupation
         if occupation.strip():

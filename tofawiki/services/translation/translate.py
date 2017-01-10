@@ -29,6 +29,7 @@ class Translate(Service):
             # Just once for goodness sake
             if self.article.isRedirectPage():
                 self.article = self.article.getRedirectTarget()
+
         try:
             self.article.get()
         except pywikibot.NoPage:
