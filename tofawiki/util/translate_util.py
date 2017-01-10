@@ -27,6 +27,59 @@ def linker(a):
     return u"[[%s]]" % a
 
 
+def link_translator(batch, ensite, fasite, cache=None):
+    cache_prefix = 'translate:fawiki:enwiki:linktrans:'
+    res = {}
+    api_batch = []
+    for name in batch:
+        if cache and cache.get_value(cache_prefix + name):
+            res[name] = cache.get_value(cache_prefix + name)
+        else:
+            api_batch.append(name)
+    if api_batch:
+        params = {
+            'action': 'query',
+            'prop': 'langlinks',
+            'redirects': True,
+            'lllimit': '500',
+            'lllang': fasite.code,
+            'titles': '|'.join(api_batch)
+        }
+        req = pywikibot.data.api.Request(site=ensite, **params)
+        query_res = req.submit()
+        if 'pages' not in query_res.get('query', {}):
+            return res
+        redirects = {i['from']: i['to'] for i in query_res['query'].get('redirects', [])}
+        normalizeds = {i['from']: i['to'] for i in query_res['query'].get('normalized', [])}
+        pages = {}
+        for i in query_res['query']['pages']:
+            if query_res['query']['pages'][i].get('langlinks'):
+                pages[query_res['query']['pages'][i]['title']] = query_res['query']['pages'][i]['langlinks'][0].get('*')
+        for case in api_batch:
+            if case in pages and pages[case]:
+                if cache:
+                    cache.write_new_cache(cache_prefix + case, pages[case])
+                res[case] = pages[case]
+            elif case in redirects and pages.get(redirects[case]):
+                if cache:
+                    cache.write_new_cache(cache_prefix + case, pages[redirects[case]])
+                    cache.write_new_cache(cache_prefix + redirects[case], pages[redirects[case]])
+                res[case] = pages[redirects[case]]
+            elif case in normalizeds and pages.get(normalizeds[case]):
+                if cache:
+                    cache.write_new_cache(cache_prefix + case, pages[normalizeds[case]])
+                    cache.write_new_cache(cache_prefix + normalizeds[case], pages[normalizeds[case]])
+                res[case] = pages[normalizeds[case]]
+            elif case in normalizeds and normalizeds[case] in redirects and pages.get(redirects[normalizeds[case]]):
+                if cache:
+                    cache.write_new_cache(cache_prefix + case, pages[redirects[normalizeds[case]]])
+                    cache.write_new_cache(cache_prefix + normalizeds[case], pages[redirects[normalizeds[case]]])
+                    cache.write_new_cache(cache_prefix + redirects[normalizeds[case]], pages[redirects[normalizeds[case]]])
+                res[case] = pages[redirects[normalizeds[case]]]
+
+    return res
+
+
 def khoshgeler(a):
     if not a:
         return a
@@ -59,35 +112,16 @@ def en2fa(i):
     return b
 
 
-def translator(a, ensite, fasite, cache):
+def translator(a, ensite, fasite, cache=None):
     if not a:
         return ''
     b = a
-    rerf = re.compile("\[\[(.+?)(?:\||\]\])")
-    for name in rerf.findall(a):
-        if cache.get_value('translate:fawiki:enwiki:linktrans:' + name):
-            res = cache.get_value('translate:fawiki:enwiki:linktrans:' + name)
+    names = re.findall("\[\[(.+?)(?:\||\]\])", a)
+    res = link_translator(names, ensite, fasite, cache)
+    for name in names:
+        if name in res:
             b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
-                       re.escape(name), res, b)
-        else:
-            try:
-                pagename = pywikibot.Page(ensite, name)
-                pagename.isRedirectPage()
-            except:
-                continue
-            if pagename.isRedirectPage():
-                pagename = pagename.getRedirectTarget()
-            try:
-                item = pywikibot.ItemPage.fromPage(pagename)
-                item.get()
-            except:
-                continue
-            if not item.sitelinks.get('fawiki'):
-                continue
-            if cache:
-                cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(item.sitelinks['fawiki']))
-            b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
-                        re.escape(name), linker(item.sitelinks['fawiki']), b)
+                       re.escape(name), linker(res[name]), b)
     return b
 
 
@@ -140,24 +174,11 @@ def sortcat(entext, entitle, title):
 
 def catadder(entext, ensite, fasite, cache=None):
     cats = u""
-    cache_prefix = 'translate:fawiki:enwiki:cattrans:'
-    for name in re.findall(r'\[\[[Cc]ategory:(.+?)(?:\]\]|\|)', entext):
-        if cache and cache.get_value(cache_prefix + name):
-            res = cache.get_value(cache_prefix + name)
-            cats = cats + u"\n[[%s]]" % res
-        else:
-            catpage = pywikibot.Page(ensite, u"Category:" + name)
-            try:
-                item = pywikibot.ItemPage.fromPage(catepage)
-                item.get()
-            except:
-                continue
-            if not item.sitelinks.get('fawiki'):
-                continue
-            fa_name = item.sitelinks['fawiki']
-            if cache:
-                cache.write_new_cache(cache_prefix + name, fa_name)
-            cats = cats + u"\n[[" + fa_name + "]]"
+    res = link_translator(re.findall(r'\[\[([Cc]ategory:.+?)(?:\]\]|\|)', entext), ensite, fasite, cache)
+    res = list(res.values())
+    res.sort()
+    for name in res:
+        cats = cats + u"\n[[" + name + "]]"
     return cats
 
 
@@ -261,6 +282,7 @@ def occu(a, b, ensite, fasite, repo, cache=None):
     if textg.count(u"،") == 1:
         textg = textg.replace(u"،", u"")
     return textg[:-2] + u" "
+
 
 def officefixer(text):
     #TODO: Make this work
