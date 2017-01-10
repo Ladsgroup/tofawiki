@@ -78,15 +78,16 @@ def translator(a, ensite, fasite, cache):
             if pagename.isRedirectPage():
                 pagename = pagename.getRedirectTarget()
             try:
-                iwpages = pagename.langlinks()
+                item = pywikibot.ItemPage.fromPage(pagename)
+                item.get()
             except:
                 continue
-            for iwpage in iwpages:
-                if iwpage.site == fasite:
-                    if cache:
-                        cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(iwpage.canonical_title()))
-                    b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
-                               re.escape(name), linker(iwpage.canonical_title()), b)
+            if not item.sitelinks.get('fawiki'):
+                continue
+            if cache:
+                cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(item.sitelinks['fawiki']))
+            b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
+                        re.escape(name), linker(item.sitelinks['fawiki']), b)
     return b
 
 
@@ -105,14 +106,15 @@ def translator_taki(a, ensite, fasite, strict=False, cache=None):
             if pagename.isRedirectPage():
                 pagename = pagename.getRedirectTarget()
             try:
-                iwpages = pagename.langlinks()
+                item = pywikibot.ItemPage.fromPage(pagename)
+                item.get()
             except:
                 continue
-            for iwpage in iwpages:
-                if iwpage.site == fasite:
-                    if cache:
-                        cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(iwpage.canonical_title()))
-                    return linker(iwpage.canonical_title())
+            if not item.sitelinks.get('fawiki'):
+                continue
+            if cache:
+                cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(item.sitelinks['fawiki']))
+            return linker(item.sitelinks['fawiki'])
     if strict:
         return ""
     return a
@@ -145,12 +147,17 @@ def catadder(entext, ensite, fasite, cache=None):
             cats = cats + u"\n[[%s]]" % res
         else:
             catpage = pywikibot.Page(ensite, u"Category:" + name)
-            for iwpage in catpage.langlinks():
-                if iwpage.site == fasite:
-                    if cache:
-                        cache.write_new_cache(cache_prefix + name, iwpage.canonical_title())
-                    cats = cats + u"\n[[" + iwpage.canonical_title() + "]]"
-                    # TODO: we should add a break here to get it much faster *but* it might get out of the outer loop
+            try:
+                item = pywikibot.ItemPage.fromPage(catepage)
+                item.get()
+            except:
+                continue
+            if not item.sitelinks.get('fawiki'):
+                continue
+            fa_name = item.sitelinks['fawiki']
+            if cache:
+                cache.write_new_cache(cache_prefix + name, fa_name)
+            cats = cats + u"\n[[" + fa_name + "]]"
     return cats
 
 
