@@ -302,7 +302,7 @@ class HumanSubject(UnknownSubject):
             if wd_id == 18:
                 self.infobox[name] = self.info[wd_id][0].title(underscore=True, withNamespace=False)
             elif wd_id in [569, 570]:
-                self.infobox[name] = self.info[wd_id][0].toTimestr()[1:]
+                self.infobox[name] = self.info[wd_id][0].toTimestr()[1:].split('T')[0]
             else:
                 self.infobox[name] = data2fa(self.info[wd_id][0], self.fasite.data_repository(), self.cache, strict=True)
 
