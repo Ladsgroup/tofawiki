@@ -2,6 +2,7 @@ import re
 import pywikibot
 
 # Disclaimer: This codes are super old and creepy, we need to rewrite them altogether
+FA_LETTERS = r"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]"
 
 months = {"January": u"ژانویه",
           "February": u"فوریه",
@@ -220,6 +221,8 @@ def get_lang(a, b):
 
 
 def data2fa(number, repo, cache=None, strict=False, ff=False):
+    if isinstance(number, pywikibot.ItemPage):
+        number = number.getID(True)
     cache_key = 'translate:fawiki:wikidatawiki:linktrans:'
     if strict:
         cache_key += 'strict:'
@@ -261,13 +264,13 @@ def occu(a, b, ensite, fasite, repo, cache=None):
     listoc = []
     if a:
         for i in a:
-            ff = data2fa(int(i), repo, cache)
+            ff = data2fa(i, repo, cache)
             if ff:
                 listoc.append(ff)
     if not listoc:
         links = translator(u"[[" + b.replace(", ", u"]][[") + u"]]", ensite, fasite, cache)
         for i in re.findall("\[\[(.+?)(?:\]\]|\|)", links):
-            if re.search(u"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]", i):
+            if re.search(FA_LETTERS, i):
                 if i:
                     listoc.append(i)
     textg = ''

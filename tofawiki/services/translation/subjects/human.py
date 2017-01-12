@@ -1,7 +1,8 @@
 import re
 
 from .unknown import UnknownSubject
-from ....util.translate_util import dater, translator, get_lang, en2fa, data2fa, linker, officefixer, khoshgeler, occu
+from ....util.translate_util import (dater, translator, get_lang, en2fa, data2fa, linker, officefixer, khoshgeler,
+                                     occu, FA_LETTERS)
 
 import pywikibot
 from pywikibot import pagegenerators
@@ -101,7 +102,11 @@ class HumanSubject(UnknownSubject):
         return text
 
     def run_infobox_fixes(self):
+        self.infobox['name'] = self.service.faname
+        self.run_wikidata_fix("image", 18)
+        self.run_wikidata_fix("birth_date", 569)
         self.run_wikidata_fix("birth_place", 19)
+        self.run_wikidata_fix("death_date", 570)
         self.run_wikidata_fix("death_place", 20)
         self.run_wikidata_fix("nationality", 27)
         occupation = ''
@@ -132,8 +137,6 @@ class HumanSubject(UnknownSubject):
                     for awname in re.findall(r"\[\[(.+?)(?:\||\]\])", self.infobox[case]):
                         awardstext += u"[[" + awname + u"]]"
 
-        if "occupation" in self.infobox:
-            long_occupation = self.infobox["occupation"]
         self.date_cleaner('birth_date')
         self.date_cleaner('death_date')
         if "music" in self.infobox_title.lower():
@@ -178,7 +181,13 @@ class HumanSubject(UnknownSubject):
             if fields:
                 long_occupation += u" در زمینه " + khoshgeler(fields[0])
 
-        if not long_occupation:
+        if "occupation" in self.infobox:
+            if '[[' not in self.infobox["occupation"]:
+                linked = '[[' + self.infobox["occupation"].replace(', ', ']], [[') + ']]'
+                self.infobox["occupation"] = translator(linked, self.service.article.site, self.fasite, self.cache)
+                long_occupation = self.infobox["occupation"]
+
+        if not long_occupation or not re.search(r"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]", long_occupation):
             long_occupation = occu(
                 self.info[106],
                 occupation,
@@ -186,6 +195,7 @@ class HumanSubject(UnknownSubject):
                 ensite=self.service.article.site,
                 repo=self.fasite.data_repository(),
                 cache=self.cache)
+
         awards = u""
         if 166 in self.info:
             awards_list = []
@@ -238,6 +248,8 @@ class HumanSubject(UnknownSubject):
             self.occupation = long_occupation
         if occupation.strip():
             self.stub_type = occupation
+        elif long_occupation.strip() and '[[' in long_occupation and re.search(FA_LETTERS, long_occupation.split('[[')[1].split(']]')[0]):
+            self.stub_type = long_occupation.split('[[')[1].split(']]')[0]
         self.clubs = clubs
         self.awards = awards
         self.awards2 = awardstext2
@@ -286,8 +298,13 @@ class HumanSubject(UnknownSubject):
 
     def run_wikidata_fix(self, name, wd_id):
         self.infobox[name] = ''
-        if wd_id in self.info:
-            self.infobox[name] = data2fa(self.info[wd_id][0], self.fasite.data_repository(), self.cache, strict=True)
+        if self.info[wd_id]:
+            if wd_id == 18:
+                self.infobox[name] = self.info[wd_id][0].title(underscore=True, withNamespace=False)
+            elif wd_id in [569, 570]:
+                self.infobox[name] = self.info[wd_id][0].toTimestr()[1:]
+            else:
+                self.infobox[name] = data2fa(self.info[wd_id][0], self.fasite.data_repository(), self.cache, strict=True)
 
     def films(self):
         gen = pagegenerators.ReferringPageGenerator(self.service.item)

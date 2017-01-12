@@ -61,7 +61,6 @@ class UnknownSubject(Subject):
         text += u"\n*{{یادکرد-ویکی|پیوند =" + enpage.permalink().replace("&useskin=monobook", "") + \
                 u"|عنوان = " + enpage.title().replace(u"_", u" ") + \
                 u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}"
-        self.extract_info()
 
         if self.info[373] or self.info['twitter'] or self.info['facebook'] or self.info['official'] or 434 in self.info:
             if self.info[373]:
@@ -100,6 +99,7 @@ class UnknownSubject(Subject):
                 self.info[int(property_number.split('P')[1])].append(claim.getTarget())
 
     def extract_infobox(self):
+        self.extract_info()
         # TODO: strip doesn't work in pywikibot 2.0rc5. We need to use master
         for i in extract_templates_and_params(self.service.article.text, None, strip=True):
             if not self.infobox and "infobox" in i[0].lower():
@@ -132,5 +132,7 @@ class UnknownSubject(Subject):
 
     def run_infobox_fixes(self):
         for case in self.infobox:
+            if case in ['name', 'title']:
+                self.infobox[case] = self.service.faname
             if re.search("term_?(?:start|end)\d*", case):
                 self.infobox[case] = dater(self.infobox[case])
