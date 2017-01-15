@@ -214,6 +214,12 @@ def dater(a):
 
 def get_lang(a, b):
     b = b.replace(u"_", u" ").split(" (")[0]
+    c = []
+    for line in a.split('\n'):
+        if not line.strip() or line.strip()[0] in ['[', '{', '|']:
+            continue
+        c.append(line)
+    a = '\n'.join(c)
     if re.search(u"\{\{lang(-|\|)", a):
         return u"{{lang" + a.split("{{lang")[1].split("}}")[0] + u"}}"
     else:
