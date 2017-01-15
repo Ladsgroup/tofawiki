@@ -28,6 +28,62 @@ def linker(a):
     return u"[[%s]]" % a
 
 
+# Note: batch size shouldn't exceed 50
+def link_translator_api(batch, ensite, fasite):
+    params = {
+        'action': 'query',
+        'redirects': '',
+        'titles': '|'.join(batch)
+    }
+    query_res = pywikibot.data.api.Request(site=ensite, **params).submit()
+    redirects = {i['from']: i['to'] for i in query_res['query'].get('redirects', [])}
+    normalizeds = {i['from']: i['to'] for i in query_res['query'].get('normalized', [])}
+
+    # Resolve normalized redirects and merge normalizeds dict into redirects at the same time
+    for k, v in normalizeds.items():
+        redirects[k] = redirects.get(v, v)
+
+    wikidata = pywikibot.Site('wikidata', 'wikidata')
+
+    params = {
+        'action': 'wbgetentities',
+        'sites': ensite.dbName(),
+        'titles': '|'.join([redirects.get(i, i) for i in batch]),
+        'props': 'sitelinks'
+    }
+
+    try:
+        query_res = pywikibot.data.api.Request(site=wikidata, **params).submit()
+    except:
+        return {}
+
+    matches_titles = {}
+    entities = query_res.get('entities', {})
+    endbName = ensite.dbName()
+    fadbName = fasite.dbName()
+    for qid, entity in entities.items():
+        if fadbName in entity.get('sitelinks', {}):
+            en_title = entity['sitelinks'][endbName]
+            fa_title = entity['sitelinks'][fadbName]
+
+            # for not updated since addition of badges on Wikidata items
+            if not isinstance(en_title, str):
+                en_title = en_title['title']
+                fa_title = fa_title['title']
+
+            matches_titles[en_title] = fa_title
+
+    res = {}
+    for i in batch:
+        p = redirects[i] if (i in redirects) else i
+        if p in matches_titles:
+            if i in redirects:
+                res[p] = matches_titles[p]
+            res[i] = matches_titles[p]
+
+    return res
+
+
 def link_translator(batch, ensite, fasite, cache=None):
     cache_prefix = 'translate:fawiki:enwiki:linktrans:'
     res = {}
@@ -38,45 +94,12 @@ def link_translator(batch, ensite, fasite, cache=None):
         else:
             api_batch.append(name)
     if api_batch:
-        params = {
-            'action': 'query',
-            'prop': 'langlinks',
-            'redirects': True,
-            'lllimit': '500',
-            'lllang': fasite.code,
-            'titles': '|'.join(api_batch)
-        }
-        req = pywikibot.data.api.Request(site=ensite, **params)
-        query_res = req.submit()
-        if 'pages' not in query_res.get('query', {}):
-            return res
-        redirects = {i['from']: i['to'] for i in query_res['query'].get('redirects', [])}
-        normalizeds = {i['from']: i['to'] for i in query_res['query'].get('normalized', [])}
-        pages = {}
-        for i in query_res['query']['pages']:
-            if query_res['query']['pages'][i].get('langlinks'):
-                pages[query_res['query']['pages'][i]['title']] = query_res['query']['pages'][i]['langlinks'][0].get('*')
-        for case in api_batch:
-            if case in pages and pages[case]:
-                if cache:
-                    cache.write_new_cache(cache_prefix + case, pages[case])
-                res[case] = pages[case]
-            elif case in redirects and pages.get(redirects[case]):
-                if cache:
-                    cache.write_new_cache(cache_prefix + case, pages[redirects[case]])
-                    cache.write_new_cache(cache_prefix + redirects[case], pages[redirects[case]])
-                res[case] = pages[redirects[case]]
-            elif case in normalizeds and pages.get(normalizeds[case]):
-                if cache:
-                    cache.write_new_cache(cache_prefix + case, pages[normalizeds[case]])
-                    cache.write_new_cache(cache_prefix + normalizeds[case], pages[normalizeds[case]])
-                res[case] = pages[normalizeds[case]]
-            elif case in normalizeds and normalizeds[case] in redirects and pages.get(redirects[normalizeds[case]]):
-                if cache:
-                    cache.write_new_cache(cache_prefix + case, pages[redirects[normalizeds[case]]])
-                    cache.write_new_cache(cache_prefix + normalizeds[case], pages[redirects[normalizeds[case]]])
-                    cache.write_new_cache(cache_prefix + redirects[normalizeds[case]], pages[redirects[normalizeds[case]]])
-                res[case] = pages[redirects[normalizeds[case]]]
+        api_res = link_translator_api(api_batch, ensite=ensite, fasite=fasite)
+        for case in api_res:
+            if cache:
+                cache.write_new_cache(cache_prefix + case, api_res[case])
+            if case in batch:
+                res[case] = api_res[case]
 
     return res
 
@@ -128,9 +151,10 @@ def translator(a, ensite, fasite, cache=None):
 
 def translator_taki(a, ensite, fasite, strict=False, cache=None):
     b = a
+    cache_prefix = 'translate:fawiki:enwiki:linktrans:'
     for name in re.findall("\[\[(.+?)(?:\||\]\])", a):
-        if cache and cache.get_value('translate:fawiki:enwiki:linktrans:' + name):
-            res = cache.get_value('translate:fawiki:enwiki:linktrans:' + name)
+        if cache and cache.get_value(cache_prefix + name):
+            res = cache.get_value(cache_prefix + name)
             b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
                        re.escape(name), res, b)
         else:
@@ -148,7 +172,7 @@ def translator_taki(a, ensite, fasite, strict=False, cache=None):
             if not item.sitelinks.get('fawiki'):
                 continue
             if cache:
-                cache.write_new_cache('translate:fawiki:enwiki:linktrans:' + name, linker(item.sitelinks['fawiki']))
+                cache.write_new_cache(cache_prefix + name, linker(item.sitelinks['fawiki']))
             return linker(item.sitelinks['fawiki'])
     if strict:
         return ""
@@ -175,7 +199,8 @@ def sortcat(entext, entitle, title):
 
 def catadder(entext, ensite, fasite, cache=None):
     cats = u""
-    res = link_translator(re.findall(r'\[\[([Cc]ategory:.+?)(?:\]\]|\|)', entext), ensite, fasite, cache)
+    res = link_translator(
+        re.findall(r'\[\[([Cc]ategory:.+?)(?:\]\]|\|)', entext), ensite, fasite, cache)
     res = list(res.values())
     res.sort()
     for name in res:
@@ -294,5 +319,5 @@ def occu(a, b, ensite, fasite, repo, cache=None):
 
 
 def officefixer(text):
-    #TODO: Make this work
+    # TODO: Make this work
     return text
