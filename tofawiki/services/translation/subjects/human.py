@@ -104,10 +104,10 @@ class HumanSubject(UnknownSubject):
     def run_infobox_fixes(self):
         self.infobox['name'] = self.service.faname
         self.run_wikidata_fix("image", 18)
-        if not self.infobox["birth_date"]:
+        if not self.infobox.get("birth_date"):
             self.run_wikidata_fix("birth_date", 569)
         self.run_wikidata_fix("birth_place", 19)
-        if not self.infobox["death_date"]:
+        if not self.infobox.get("death_date"):
             self.run_wikidata_fix("death_date", 570)
         self.run_wikidata_fix("death_place", 20)
         self.run_wikidata_fix("nationality", 27)
