@@ -104,9 +104,11 @@ class HumanSubject(UnknownSubject):
     def run_infobox_fixes(self):
         self.infobox['name'] = self.service.faname
         self.run_wikidata_fix("image", 18)
-        self.run_wikidata_fix("birth_date", 569)
+        if not self.infobox["birth_date"]:
+            self.run_wikidata_fix("birth_date", 569)
         self.run_wikidata_fix("birth_place", 19)
-        self.run_wikidata_fix("death_date", 570)
+        if not self.infobox["death_date"]:
+            self.run_wikidata_fix("death_date", 570)
         self.run_wikidata_fix("death_place", 20)
         self.run_wikidata_fix("nationality", 27)
         occupation = ''
@@ -249,7 +251,7 @@ class HumanSubject(UnknownSubject):
         if occupation.strip():
             self.stub_type = occupation
         elif long_occupation.strip() and '[[' in long_occupation and re.search(FA_LETTERS, long_occupation.split('[[')[1].split(']]')[0]):
-            self.stub_type = long_occupation.split('[[')[1].split(']]')[0]
+            self.stub_type = long_occupation.split('[[')[1].split(']')[0]
         self.clubs = clubs
         self.awards = awards
         self.awards2 = awardstext2
