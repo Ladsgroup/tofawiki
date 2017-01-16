@@ -32,7 +32,7 @@ class HumanSubject(UnknownSubject):
             text += u"زادهٔ "
         if u"}}" in self.infobox.get('birth_date', '').replace("birth date and age", "birth date"):
             text += "}}".join(self.infobox['birth_date'].lower().replace("birth date and age", "birth date").split(
-                "}}")[:]).replace(u"subst:#time: j f y", u"subst:#time: j F Y")
+                "}}")[:])
         else:
             text += self.infobox.get('birth_date', '').replace("birth date and age", "birth date")
         death_date = self.infobox.get('death_date', '')
@@ -40,7 +40,7 @@ class HumanSubject(UnknownSubject):
             text += u" – "
             if u"}}" in death_date.replace("death date and age", "death date"):
                 text += "}}".join(death_date.lower().replace("death date and age", "death date").split(
-                    "}}")[:]).replace(u"subst:#time: j f y", u"subst:#time: j F Y")
+                    "}}")[:])
             else:
                 text = text + \
                     death_date.replace("death date and age", "death date")
@@ -294,9 +294,15 @@ class HumanSubject(UnknownSubject):
         self.medals = medals
 
     def date_cleaner(self, name):
-        pattern = u"{{subst:#ifeq:{{subst:#time: j F Y|WoW}}|{{subst:#time: j F Y|ff}}||{{subst:#time: j F Y|WoW}}}}"
         if self.infobox.get(name) and self.infobox[name][0] == "0":
-            self.infobox[name] = pattern.replace(u"WoW", self.infobox[name].split("T")[0][7:])
+            clean_date = self.infobox[name].split("T")[0][7:]
+            if clean_date.count('-') != 2:
+                return
+            if name.startswith('brith'):
+                self.infobox[name] = '{{Birth date|'
+            else:
+                self.infobox[name] = '{{Death date|'
+            self.infobox[name] += clean_date.replace('-', '|') + '}}'
 
     def run_wikidata_fix(self, name, wd_id):
         self.infobox[name] = ''
