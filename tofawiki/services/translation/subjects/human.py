@@ -226,7 +226,7 @@ class HumanSubject(UnknownSubject):
         if self.info.get('official'):
             self.infobox['official'] = self.info['official']
         if 109 in self.info:
-            self.infobox['signature'] = self.info[109][0]
+            self.infobox['signature'] = self.info[109][0].title(underscore=True, withNamespace=False)
 
         if not self.infobox_title:
             self.infobox_title = "infobox person"

@@ -52,7 +52,10 @@ class UnknownSubject(Subject):
         return {'page_content': self.run_fixes(content)}
 
     def get_footer(self):
-        # TODO:Refactor for bacthing of linktranslator
+        authority_controls = [214, 244, 213, 496, 227, 906, 269, 268, 651, 1053,
+                              1015, 245, 902, 886, 434, 549, 409, 349, 1048, 691,
+                              640, 396, 947, 428, 1222, 1223, 1157, 950, 271, 1362,
+                              781, 1248, 650]
         enpage = self.service.article
         entext = enpage.get()
         faname = self.service.faname
@@ -76,9 +79,13 @@ class UnknownSubject(Subject):
                 text += u"* {{facebook|" + self.info['facebook'] + u"}}\n"
             if self.info['twitter']:
                 text += u"* {{twitter|" + self.info['twitter'] + u"}}\n"
-        text += self.breaks + u"{{" + self.get_stub_type() +"-خرد}}\n"
         if self.info['coord']:
             text += self.info['coord'][0] + "\n"
+        for i in self.info:
+            if i in authority_controls:
+                text += "{{داده‌های کتابخانه‌ای}}\n"
+                break
+        text += u"\n{{" + self.get_stub_type() + "-خرد}}" + self.breaks
         text = text + sortcat(entext,
                               enpage.title().split(" (")[0], faname.split(" (")[0])
         text = text + catadder(entext, enpage.site, self.fasite, self.cache)
