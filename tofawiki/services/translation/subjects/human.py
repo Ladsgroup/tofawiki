@@ -1,8 +1,8 @@
 import re
 
 from .unknown import UnknownSubject
-from ....util.translate_util import (dater, translator, get_lang, en2fa, data2fa, linker, officefixer, khoshgeler,
-                                     occu, FA_LETTERS)
+from ....util.translate_util import (dater, translator, get_lang, en2fa, data2fa, linker,
+                                     officefixer, khoshgeler, occu, FA_LETTERS)
 
 import pywikibot
 from pywikibot import pagegenerators
@@ -26,21 +26,26 @@ class HumanSubject(UnknownSubject):
             u"[[داستان کوتاه]]": u"نویسنده [[داستان کوتاه]]",
             u"[[میلیاردره]]": u"[[میلیاردر]]",
         }
-        lang = get_lang(self.service.article.text.split("\n==")[0], self.service.article.title().split(" (")[0])
+        lang = get_lang(self.service.article.text.split("\n==")[0],
+                        self.service.article.title().split(" (")[0])
         text = "'''" + self.service.faname.split(" (")[0] + u"''' (" + lang + u"؛ "
         if not self.infobox.get('death_date', '').strip():
             text += u"زادهٔ "
-        if u"}}" in self.infobox.get('birth_date', '').replace("birth date and age", "birth date"):
-            text += "}}".join(self.infobox['birth_date'].lower().replace("birth date and age", "birth date").split(
-                "}}")[:])
+        birth_date = self.infobox.get('birth_date', '')
+        if u"}}" in birth_date.replace("birth date and age", "birth date"):
+            text += "}}".join(
+                birth_date.lower().replace(
+                    "birth date and age", "birth date").split(
+                        "}}")[:])
         else:
-            text += self.infobox.get('birth_date', '').replace("birth date and age", "birth date")
+            text += birth_date.replace("birth date and age", "birth date")
         death_date = self.infobox.get('death_date', '')
         if death_date:
             text += u" – "
             if u"}}" in death_date.replace("death date and age", "death date"):
-                text += "}}".join(death_date.lower().replace("death date and age", "death date").split(
-                    "}}")[:])
+                text += "}}".join(death_date.lower().replace(
+                    "death date and age", "death date").split(
+                        "}}")[:])
             else:
                 text = text + \
                     death_date.replace("death date and age", "death date")
@@ -115,7 +120,8 @@ class HumanSubject(UnknownSubject):
         long_occupation = ''
         awardstext = ''
         if re.search(
-                "(sportsperson|swim|football|soccer|rugby|tennis|cyclist|f1 driver|baseball|basketball| mlb| nba)",
+                r"(sportsperson|swim|football|soccer|rugby|tennis|cyclist|"
+                r"f1 driver|baseball|basketball| mlb| nba)",
                 self.infobox_title.lower()):
             self.run_sport_fixes()
         else:
@@ -151,7 +157,8 @@ class HumanSubject(UnknownSubject):
             long_occupation = u"سیاست‌مدار"
             occupation = u"سیاست‌مدار"
         elif re.search(
-                "(sportsperson|swim|football|soccer|rugby|tennis|cyclist|f1 driver|baseball|basketball| mlb| nba)",
+                r"(sportsperson|swim|football|soccer|rugby|tennis|cyclist|"
+                r"f1 driver|baseball|basketball| mlb| nba)",
                 self.infobox_title.lower()):
             long_occupation = u"ورزشکار"
             occupations = {
@@ -177,7 +184,11 @@ class HumanSubject(UnknownSubject):
             occupation = u"دانشمند"
             fields = []
             if 101 in self.info:
-                fields = [linker(data2fa(self.info[101][0], repo=self.fasite.data_repository(), cache=self.cache))]
+                fields = [
+                    linker(data2fa(self.info[101][0],
+                           repo=self.fasite.data_repository(),
+                           cache=self.cache))
+                ]
             if not fields:
                 fields = self.infobox.get('field', [])
             if fields:
@@ -186,10 +197,11 @@ class HumanSubject(UnknownSubject):
         if "occupation" in self.infobox:
             if '[[' not in self.infobox["occupation"]:
                 linked = '[[' + self.infobox["occupation"].replace(', ', ']], [[') + ']]'
-                self.infobox["occupation"] = translator(linked, self.service.article.site, self.fasite, self.cache)
+                self.infobox["occupation"] = translator(
+                    linked, self.service.article.site, self.fasite, self.cache)
                 long_occupation = self.infobox["occupation"]
 
-        if not long_occupation or not re.search(r"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]", long_occupation):
+        if not long_occupation or not re.search(FA_LETTERS, long_occupation):
             long_occupation = occu(
                 self.info[106],
                 occupation,
@@ -222,11 +234,13 @@ class HumanSubject(UnknownSubject):
         awardstext2 = khoshgeler(awardstext2)
 
         if self.infobox.get('years_active'):
-            self.infobox['years_active'] = en2fa(self.infobox['years_active']).replace("present", u"اکنون")
+            self.infobox['years_active'] = en2fa(
+                self.infobox['years_active']).replace("present", u"اکنون")
         if self.info.get('official'):
             self.infobox['official'] = self.info['official']
         if 109 in self.info:
-            self.infobox['signature'] = self.info[109][0].title(underscore=True, withNamespace=False)
+            self.infobox['signature'] = self.info[109][0].title(
+                underscore=True, withNamespace=False)
 
         if not self.infobox_title:
             self.infobox_title = "infobox person"
@@ -245,12 +259,14 @@ class HumanSubject(UnknownSubject):
                 self.infobox['death_date'] = yearfa[0]
 
         if not long_occupation.strip() and occupation.strip():
-            long_occupation = translator(occupation, self.service.article.site, self.fasite, self.cache)
+            long_occupation = translator(
+                occupation, self.service.article.site, self.fasite, self.cache)
         if long_occupation.strip():
             self.occupation = long_occupation
         if occupation.strip():
             self.stub_type = occupation
-        elif long_occupation.strip() and '[[' in long_occupation and re.search(FA_LETTERS, long_occupation.split('[[')[1].split(']]')[0]):
+        elif (long_occupation.strip() and '[[' in long_occupation and
+                re.search(FA_LETTERS, long_occupation.split('[[')[1].split(']]')[0])):
             self.stub_type = long_occupation.split('[[')[1].split(']')[0]
         self.clubs = clubs
         self.awards = awards
@@ -312,7 +328,11 @@ class HumanSubject(UnknownSubject):
             elif wd_id in [569, 570]:
                 self.infobox[name] = self.info[wd_id][0].toTimestr()[1:].split('T')[0]
             else:
-                self.infobox[name] = data2fa(self.info[wd_id][0], self.fasite.data_repository(), self.cache, strict=True)
+                self.infobox[name] = data2fa(
+                    self.info[wd_id][0],
+                    self.fasite.data_repository(),
+                    self.cache,
+                    strict=True)
 
     def films(self):
         gen = pagegenerators.ReferringPageGenerator(self.service.item)
@@ -331,14 +351,17 @@ class HumanSubject(UnknownSubject):
                 continue
             for claim in item.claims['P161']:
                 if claim.getTarget().getID() == self.service.item.getID():
-                    res = data2fa(int(item.title().replace("Q", '')), self.fasite.data_repository(), self.cache)
+                    res = data2fa(
+                        int(item.title().replace("Q", '')),
+                        self.fasite.data_repository(),
+                        self.cache)
                     if res:
                         filmsandseries.append(res)
-        film_text = self.breaks + u"از فیلم‌ها یا برنامه‌های تلویزیونی که وی در آن نقش داشته است می‌توان به "[
-                   :-2] + u" اشاره کرد."
+        explanation = u"از فیلم‌ها یا برنامه‌های تلویزیونی که وی در آن نقش داشته است می‌توان به "
+        film_text = self.breaks + explanation + " اشاره کرد."
         text = u''
         if filmsandseries:
-            text = self.breaks + u"از فیلم‌ها یا برنامه‌های تلویزیونی که وی در آن نقش داشته است می‌توان به "
+            text = self.breaks + explanation
             for i in filmsandseries:
                 if i:
                     text += linker(i) + u"، "

@@ -5,6 +5,7 @@ from ...services.service import Service
 from .subjects.unknown import UnknownSubject
 from .subjects.human import HumanSubject
 
+
 class Translate(Service):
     def __init__(self, wiki, article, faname, config):
         self.wiki = wiki
@@ -44,7 +45,7 @@ class Translate(Service):
 
     def run(self):
         res = self.validate()
-        if res != True:
+        if res is not True:
             return res
         self.subject = self.get_subject_callback()(self)
         return self.subject.get_translation()

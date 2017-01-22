@@ -11,4 +11,3 @@ def configure(config):
     bp = routes.configure(config, bp)
     app.register_blueprint(bp, url_prefix=config['wsgi']['url_prefix'])
     return app
-

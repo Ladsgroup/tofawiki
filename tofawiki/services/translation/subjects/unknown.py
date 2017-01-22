@@ -23,7 +23,9 @@ class UnknownSubject(Subject):
         self.infobox_title = ''
 
     def get_lead(self):
-        lang = get_lang(self.service.article.text.split("\n==")[0], self.service.article.title().split(" (")[0])
+        lang = get_lang(
+            self.service.article.text.split("\n==")[0],
+            self.service.article.title().split(" (")[0])
         template = Template("'''{{ fa_name }}''' ({{ lang }})")
         return template.render(
             fa_name=self.service.faname.split(' (')[0],
@@ -48,7 +50,9 @@ class UnknownSubject(Subject):
             self.run_infobox_fixes()
             content = self.get_infobox() + '\n' + self.get_lead() + self.breaks + self.get_footer()
         except:
-            return {'error': 'Unable to translate. Copy paste this for Amir: ' + traceback.format_exc()}
+            return {
+                'error': 'Unable to translate. Copy paste this for Amir: ' + traceback.format_exc()
+            }
         return {'page_content': self.run_fixes(content)}
 
     def get_footer(self):
@@ -61,11 +65,13 @@ class UnknownSubject(Subject):
         faname = self.service.faname
         text = seealsoer(entext, enpage.site, self.fasite, self.cache)
         text += self.breaks + u"== منابع ==\n{{پانویس|چپ‌چین=بله}}"
-        text += u"\n*{{یادکرد-ویکی|پیوند =" + enpage.permalink().replace("&useskin=monobook", "") + \
+        url = enpage.permalink().replace("&useskin=monobook", "")
+        text += u"\n*{{یادکرد-ویکی|پیوند =" + url + \
                 u"|عنوان = " + enpage.title().replace(u"_", u" ") + \
                 u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}"
 
-        if self.info[373] or self.info['twitter'] or self.info['facebook'] or self.info['official'] or 434 in self.info:
+        if (self.info[373] or self.info['twitter'] or self.info['facebook'] or
+                self.info['official'] or 434 in self.info):
             if self.info[373]:
                 text += u"\n{{-}}\n"
             text += u"\n== پیوند به بیرون ==\n"
