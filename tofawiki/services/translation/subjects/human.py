@@ -56,7 +56,7 @@ class HumanSubject(UnknownSubject):
             self.occupation += u"]"
         for fix in occu_fixes:
             self.occupation = self.occupation.replace(fix, occu_fixes[fix])
-        text = text + u") یک " + self.occupation
+        text = text + u") " + self.occupation
         if self.infobox['nationality']:
             text += u" اهل " + self.infobox['nationality']
         if not self.infobox.get('death_date', '').strip():
