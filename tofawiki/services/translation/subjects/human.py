@@ -350,6 +350,8 @@ class HumanSubject(UnknownSubject):
             if 'P161' not in item.claims:
                 continue
             for claim in item.claims['P161']:
+                if not claim.getTarget():
+                    continue
                 if claim.getTarget().getID() == self.service.item.getID():
                     res = data2fa(
                         int(item.title().replace("Q", '')),
