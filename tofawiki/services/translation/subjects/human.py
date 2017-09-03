@@ -112,6 +112,7 @@ class HumanSubject(UnknownSubject):
         if not self.infobox.get("birth_date"):
             self.run_wikidata_fix("birth_date", 569)
         self.run_wikidata_fix("birth_place", 19)
+        self.run_wikidata_fix("sport", 641)
         if not self.infobox.get("death_date"):
             self.run_wikidata_fix("death_date", 570)
         self.run_wikidata_fix("death_place", 20)
@@ -173,6 +174,8 @@ class HumanSubject(UnknownSubject):
                 if i in self.infobox_title.lower():
                     long_occupation = linker(occupations[i])
                     occupation = occupations[i]
+            if long_occupation == u"ورزشکار" and self.infobox['sport']:
+                long_occupation = u"ورزشکار " + linker(self.infobox['sport'])
         elif "adult biography" in self.infobox_title.lower():
             long_occupation = u"بازیگر پورنوگرافی"
             occupation = u"بازیگر پورنوگرافی"
@@ -328,11 +331,14 @@ class HumanSubject(UnknownSubject):
             elif wd_id in [569, 570]:
                 self.infobox[name] = self.info[wd_id][0].toTimestr()[1:].split('T')[0]
             else:
-                self.infobox[name] = data2fa(
+                res = data2fa(
                     self.info[wd_id][0],
                     self.fasite.data_repository(),
                     self.cache,
                     strict=True)
+                if not res:
+                    return
+                self.infobox[name] = linker(res)
 
     def films(self):
         gen = pagegenerators.ReferringPageGenerator(self.service.item)
