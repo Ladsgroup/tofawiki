@@ -370,10 +370,16 @@ class HumanSubject(UnknownSubject):
         text = u''
         if filmsandseries:
             text = self.breaks + explanation
+            films_count = 0
             for i in filmsandseries:
                 if i:
-                    text += linker(i) + u"، "
-            text = text[:-2] + u" اشاره کرد."
+                    films_count += 1
+                    text += "''" + linker(i) + u"''، "
+            if films_count > 2:
+                text = ']]''، و '.join(text[:-2].rsplit("]]''، ", 1))
+            else:
+                text = text[:-2]
+            text += u" اشاره کرد."
         if not text == film_text:
             return text
         return u''
