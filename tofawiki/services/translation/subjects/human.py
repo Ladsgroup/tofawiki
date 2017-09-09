@@ -220,6 +220,8 @@ class HumanSubject(UnknownSubject):
                 award = data2fa(i, self.fasite.data_repository(), self.cache)
                 if award:
                     awards_list.append(linker(award))
+            # Clean up duplicates
+            awards_list = list(set(awards_list))
             awards = " ".join(awards_list).strip()
         clubs = u""
         if 54 in self.info:
