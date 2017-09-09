@@ -21,6 +21,7 @@ class UnknownSubject(Subject):
         self.fasite = pywikibot.Site('fa')
         self.stub_type = 'موضوع'
         self.infobox_title = ''
+        self.infobox_exceptions = ['embed']
 
     def get_lead(self):
         lang = get_lang(
@@ -37,7 +38,9 @@ class UnknownSubject(Subject):
             res += '{{' + self.infobox_title
         if self.infobox:
             for i in self.infobox:
-                res += u"\n| " + i + u" = " + self.infobox[i]
+                i_test = i.replace('\n', '').replace('\t', '').strip()
+                if i_test not in self.infobox_exceptions:
+                    res += u"\n| " + i + u" = " + self.infobox[i]
             res += '\n}}'
         return translator(res, self.service.article.site, self.fasite, self.cache)
 
