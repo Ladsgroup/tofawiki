@@ -193,7 +193,9 @@ class HumanSubject(UnknownSubject):
                            cache=self.cache))
                 ]
             if not fields:
-                fields = self.infobox.get('field', [])
+                fields = [
+                    translator(self.infobox.get('field', ''),
+                               self.service.article.site, self.fasite, self.cache)]
             if fields:
                 long_occupation += u" در زمینه " + khoshgeler(fields[0])
 
