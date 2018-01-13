@@ -7,6 +7,10 @@ from ....util.translate_util import (dater, translator, get_lang, en2fa, data2fa
 import pywikibot
 from pywikibot import pagegenerators
 
+BIRTH_DATE = 'birth_date'
+DEATH_DATE = 'death_date'
+OCCUPATION = 'occupation'
+
 
 class HumanSubject(UnknownSubject):
     def __init__(self, service):
@@ -29,9 +33,9 @@ class HumanSubject(UnknownSubject):
         lang = get_lang(self.service.article.text.split("\n==")[0],
                         self.service.article.title().split(" (")[0])
         text = "'''" + self.service.faname.split(" (")[0] + u"''' (" + lang + u"؛ "
-        if not self.infobox.get('death_date', '').strip():
+        if not self.infobox.get(DEATH_DATE, '').strip():
             text += u"زادهٔ "
-        birth_date = self.infobox.get('birth_date', '')
+        birth_date = self.infobox.get(BIRTH_DATE, '')
         if u"}}" in birth_date.replace("birth date and age", "birth date"):
             text += "}}".join(
                 birth_date.lower().replace(
@@ -39,7 +43,7 @@ class HumanSubject(UnknownSubject):
                         "}}")[:])
         else:
             text += birth_date.replace("birth date and age", "birth date")
-        death_date = self.infobox.get('death_date', '')
+        death_date = self.infobox.get(DEATH_DATE, '')
         if death_date:
             text += u" – "
             if u"}}" in death_date.replace("death date and age", "death date"):
@@ -59,7 +63,7 @@ class HumanSubject(UnknownSubject):
         text = text + u") " + self.occupation
         if self.infobox['nationality']:
             text += u" اهل " + self.infobox['nationality']
-        if not self.infobox.get('death_date', '').strip():
+        if not self.infobox.get(DEATH_DATE, '').strip():
             text += u" است. "
         else:
             text += u" بود. "
@@ -109,12 +113,12 @@ class HumanSubject(UnknownSubject):
     def run_infobox_fixes(self):
         self.infobox['name'] = self.service.faname
         self.run_wikidata_fix("image", 18)
-        if not self.infobox.get("birth_date"):
-            self.run_wikidata_fix("birth_date", 569)
+        if not self.infobox.get(BIRTH_DATE):
+            self.run_wikidata_fix(BIRTH_DATE, 569)
         self.run_wikidata_fix("birth_place", 19)
         self.run_wikidata_fix("sport", 641)
-        if not self.infobox.get("death_date"):
-            self.run_wikidata_fix("death_date", 570)
+        if not self.infobox.get(DEATH_DATE):
+            self.run_wikidata_fix(DEATH_DATE, 570)
         self.run_wikidata_fix("death_place", 20)
         self.run_wikidata_fix("nationality", 27)
         occupation = ''
@@ -146,8 +150,8 @@ class HumanSubject(UnknownSubject):
                     for awname in re.findall(r"\[\[(.+?)(?:\||\]\])", self.infobox[case]):
                         awardstext += u"[[" + awname + u"]]"
 
-        self.date_cleaner('birth_date')
-        self.date_cleaner('death_date')
+        self.date_cleaner(BIRTH_DATE)
+        self.date_cleaner(DEATH_DATE)
         if "music" in self.infobox_title.lower():
             long_occupation = u"موسیقی‌دان"
             occupation = u"موسیقی‌دان"
@@ -199,12 +203,12 @@ class HumanSubject(UnknownSubject):
             if fields:
                 long_occupation += u" در زمینه " + khoshgeler(fields[0])
 
-        if "occupation" in self.infobox:
-            if '[[' not in self.infobox["occupation"]:
-                linked = '[[' + self.infobox["occupation"].replace(', ', ']], [[') + ']]'
-                self.infobox["occupation"] = translator(
+        if OCCUPATION in self.infobox:
+            if '[[' not in self.infobox[OCCUPATION]:
+                linked = '[[' + self.infobox[OCCUPATION].replace(', ', ']], [[') + ']]'
+                self.infobox[OCCUPATION] = translator(
                     linked, self.service.article.site, self.fasite, self.cache)
-                long_occupation = self.infobox["occupation"]
+                long_occupation = self.infobox[OCCUPATION]
 
         if not long_occupation or not re.search(FA_LETTERS, long_occupation):
             long_occupation = occu(
@@ -252,18 +256,18 @@ class HumanSubject(UnknownSubject):
         if not self.infobox_title:
             self.infobox_title = "infobox person"
 
-        if self.infobox.get('birth_date') and isinstance(self.infobox['birth_date'], list):
-            self.infobox['birth_date'] = en2fa(self.infobox['birth_date'][0])
-        if self.infobox.get('death_date') and isinstance(self.infobox['death_date'], list):
-            self.infobox['death_date'] = en2fa(self.infobox['death_date'][0])
-        if not self.infobox.get('birth_date', '').strip():
+        if self.infobox.get(BIRTH_DATE) and isinstance(self.infobox[BIRTH_DATE], list):
+            self.infobox[BIRTH_DATE] = en2fa(self.infobox[BIRTH_DATE][0])
+        if self.infobox.get(DEATH_DATE) and isinstance(self.infobox[DEATH_DATE], list):
+            self.infobox[DEATH_DATE] = en2fa(self.infobox[DEATH_DATE][0])
+        if not self.infobox.get(BIRTH_DATE, '').strip():
             yearfa = re.findall(r"\[\[Category:(\d+?) births\]\]", self.service.article.text)
             if yearfa:
-                self.infobox['birth_date'] = en2fa(yearfa[0])
-        if not self.infobox.get('death_date', '').strip():
+                self.infobox[BIRTH_DATE] = en2fa(yearfa[0])
+        if not self.infobox.get(DEATH_DATE, '').strip():
             yearfa = re.findall(r"\[\[Category:(\d+?) deaths\]\]", self.service.article.text)
             if yearfa:
-                self.infobox['death_date'] = yearfa[0]
+                self.infobox[DEATH_DATE] = yearfa[0]
 
         if not long_occupation.strip() and occupation.strip():
             long_occupation = translator(
@@ -321,7 +325,7 @@ class HumanSubject(UnknownSubject):
             clean_date = self.infobox[name].split("T")[0][7:]
             if clean_date.count('-') != 2:
                 return
-            if name.startswith('brith'):
+            if name.startswith('birth'):
                 self.infobox[name] = '{{Birth date|'
             else:
                 self.infobox[name] = '{{Death date|'
