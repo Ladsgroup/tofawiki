@@ -332,8 +332,8 @@ class HumanSubject(UnknownSubject):
             self.infobox[name] += clean_date.replace('-', '|') + '}}'
 
     def run_wikidata_fix(self, name, wd_id):
-        self.infobox[name] = ''
         if self.info[wd_id]:
+            self.infobox[name] = ''
             if wd_id == 18:
                 self.infobox[name] = self.info[wd_id][0].title(underscore=True, withNamespace=False)
             elif wd_id in [569, 570]:
