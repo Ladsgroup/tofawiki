@@ -71,7 +71,7 @@ class UnknownSubject(Subject):
         url = enpage.permalink().replace("&useskin=monobook", "")
         text += u"\n*{{یادکرد-ویکی|پیوند =" + url + \
                 u"|عنوان = " + enpage.title().replace(u"_", u" ") + \
-                u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}"
+                u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}\n"
 
         if (self.info[373] or self.info['twitter'] or self.info['facebook'] or
                 self.info['official'] or 434 in self.info):
