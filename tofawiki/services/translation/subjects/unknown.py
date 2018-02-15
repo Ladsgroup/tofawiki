@@ -123,6 +123,8 @@ class UnknownSubject(Subject):
                 for case in i[1]:
                     if case.strip() in self.infobox:
                         continue
+                    if re.search(r'^\d+$', case):
+                        continue
                     arg = i[1][case]
                     self.infobox[case.strip()] = arg
             if "twitter" in i[0].lower():
