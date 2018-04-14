@@ -61,7 +61,7 @@ class HumanSubject(UnknownSubject):
         for fix in occu_fixes:
             self.occupation = self.occupation.replace(fix, occu_fixes[fix])
         text = text + u") " + self.occupation
-        if self.infobox['nationality']:
+        if self.infobox.get('nationality'):
             text += u" اهل " + self.infobox['nationality']
         if not self.infobox.get(DEATH_DATE, '').strip():
             text += u" است. "
@@ -178,7 +178,7 @@ class HumanSubject(UnknownSubject):
                 if i in self.infobox_title.lower():
                     long_occupation = linker(occupations[i])
                     occupation = occupations[i]
-            if long_occupation == u"ورزشکار" and self.infobox['sport']:
+            if long_occupation == u"ورزشکار" and self.infobox.get('sport'):
                 long_occupation = u"ورزشکار " + linker(self.infobox['sport'])
         elif "adult biography" in self.infobox_title.lower():
             long_occupation = u"بازیگر پورنوگرافی"
