@@ -14,7 +14,7 @@ be started locally with
 #### Dependencies
 Installation will require some additional packages to be available.
 
-  `sudo apt-get install python3-dev`
+  `sudo apt-get install python3-dev python3-setuptools`
 
 ### Starting the dev server
 
