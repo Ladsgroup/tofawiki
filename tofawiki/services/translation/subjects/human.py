@@ -88,16 +88,20 @@ class HumanSubject(UnknownSubject):
                 self.awards2 + u" شده است."
         if self.clubs:
             text += self.breaks + u"از باشگاه‌هایی که در آن بازی کرده‌است می‌توان به " + \
-                khoshgeler(self.clubs) + u" اشاره کرد."
+                khoshgeler(re.sub(r'\[\[تیم ملی.+?\]\]', '', self.clubs)) + u" اشاره کرد."
         if self.national_teams:
+            national_teams_text = ''
             if len(self.national_teams) == 1:
-                text = text + u"\n\nوی همچنین در تیم ملی فوتبال " + \
+                national_teams_text += u"\n\nوی همچنین در تیم ملی فوتبال " + \
                     self.national_teams[0] + u" بازی کرده است."
             else:
-                text += self.breaks + u"وی همچنین در تیم‌های ملی فوتبال "
+                national_teams_text += self.breaks + u"وی همچنین در تیم‌های ملی فوتبال "
                 for i in self.national_teams:
-                    text = text + i + u" "
-                text += u" بازی کرده است."
+                    national_teams_text += i + u" "
+                national_teams_text += u" بازی کرده است."
+            national_teams_text = translator(national_teams_text, self.service.article.site, self.fasite, self.cache)
+            national_teams_text = re.sub(r'\[\[تیم ملی فوتبال (.+?)\]\]', r'[[تیم ملی فوتبال \1|\1]]', national_teams_text)
+            text += national_teams_text
         if self.medals != [u'۰', u'۰', u'۰']:
             text += self.breaks + u'وی در مسابقات کشوری و بین‌المللی در مجموع برندهٔ '
             if self.medals[0] != u'۰':
@@ -169,6 +173,7 @@ class HumanSubject(UnknownSubject):
             occupations = {
                 u"basketball": u"بازیکن بسکتبال",
                 u" nba": u"بازیکن بسکتبال",
+                u"football": u"بازیکن فوتبال",
                 u" mlb": u"بازیکن بیس‌بال",
                 u"baseball": u"بازیکن بیس‌بال",
                 u"f1 driver": u"اتومبیل‌ران فرمول ۱",
@@ -310,7 +315,7 @@ class HumanSubject(UnknownSubject):
                 r'\1دونفره',
                 self.infobox[case])
             if re.search(r'nationalteam\d*?', case):
-                if self.infobox[case].strip():
+                if self.infobox[case].strip() and not 'update' in case:
                     self.national_teams.append(self.infobox[case])
 
         values = ' '.join(self.infobox.values())
