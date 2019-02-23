@@ -115,7 +115,7 @@ class HumanSubject(UnknownSubject):
         return text
 
     def run_infobox_fixes(self):
-        self.infobox['name'] = self.service.faname
+        self.infobox['name'] = self.service.faname.split(' (')[0]
         self.run_wikidata_fix("image", 18)
         if not self.infobox.get(BIRTH_DATE):
             self.run_wikidata_fix(BIRTH_DATE, 569)
