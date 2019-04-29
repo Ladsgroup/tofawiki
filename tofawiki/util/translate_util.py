@@ -252,6 +252,8 @@ def get_lang(a, b):
 
 
 def data2fa(number, repo, cache=None, strict=False, ff=False):
+    if not number:
+        return ''
     if isinstance(number, pywikibot.ItemPage):
         number = number.getID(True)
     cache_key = 'translate:fawiki:wikidatawiki:linktrans:'
