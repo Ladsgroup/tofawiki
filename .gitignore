@@ -100,3 +100,6 @@ apicache/
 
 # redis
 *.rdb
+
+# IntelliJ
+*.iml

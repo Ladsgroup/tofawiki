@@ -28,6 +28,11 @@ def linker(a):
     return u"[[%s]]" % a
 
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
 # Note: batch size shouldn't exceed 50
 def link_translator_api(batch, ensite, fasite):
     params = {
@@ -93,13 +98,18 @@ def link_translator(batch, ensite, fasite, cache=None):
             res[name] = cache.get_value(cache_prefix + name)
         else:
             api_batch.append(name)
-    if api_batch:
-        api_res = link_translator_api(api_batch, ensite=ensite, fasite=fasite)
-        for case in api_res:
-            if cache:
-                cache.write_new_cache(cache_prefix + case, api_res[case])
-            if case in batch:
-                res[case] = api_res[case]
+    if not api_batch:
+        return res
+
+    api_res = {}
+    for chunk in chunks(api_batch, 50):
+        api_res.update(link_translator_api(chunk, ensite=ensite, fasite=fasite))
+
+    for case in api_res:
+        if cache:
+            cache.write_new_cache(cache_prefix + case, api_res[case])
+        if case in batch:
+            res[case] = api_res[case]
 
     return res
 
