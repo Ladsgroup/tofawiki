@@ -95,10 +95,8 @@ class HumanSubject(UnknownSubject):
                 national_teams_text += u"\n\nوی همچنین در تیم ملی فوتبال " + \
                     self.national_teams[0] + u" بازی کرده است."
             else:
-                national_teams_text += self.breaks + u"وی همچنین در تیم‌های ملی فوتبال "
-                for i in self.national_teams:
-                    national_teams_text += i + u" "
-                national_teams_text += u" بازی کرده است."
+                national_teams_text += self.breaks + u"وی همچنین در تیم‌های ملی فوتبال " + \
+                   khoshgeler(' '.join(self.national_teams)) + u" بازی کرده است."
             national_teams_text = translator(national_teams_text, self.service.article.site, self.fasite, self.cache)
             national_teams_text = re.sub(r'\[\[تیم ملی فوتبال (.+?)\]\]', r'[[تیم ملی فوتبال \1|\1]]', national_teams_text)
             text += national_teams_text
@@ -241,7 +239,7 @@ class HumanSubject(UnknownSubject):
                 club = data2fa(i, self.fasite.data_repository(), self.cache)
                 if club:
                     clubs_list.append(linker(club))
-            clubs = " ".join(clubs_list).strip()
+            clubs = " ".join(list(set(clubs_list))).strip()
         awardstext2 = ''
         awardstext = translator(awardstext, self.service.article.site, self.fasite, self.cache)
         for awname in re.findall(r"\[\[(.+?)(?:\||\]\])", awardstext):
@@ -296,6 +294,8 @@ class HumanSubject(UnknownSubject):
                 self.infobox[case] = re.sub(r'[Rr]ight-?handed', 'راست‌دست', self.infobox[case])
                 self.infobox[case] = re.sub(r'[Rr]ight-?handed', 'چپ‌دست', self.infobox[case])
             self.infobox[case] = self.infobox[case].replace(u"(loan)", u"(قرضی)")
+            if self.infobox[case].strip().startswith('→'):
+                self.infobox[case] = self.infobox[case].replace('→', '←')
             self.infobox[case] = re.sub(
                 r"\[\[(تیم ملی فوتبال )(?:زنان )?(.+?)\]\]", r"[[\1\2|\2]]", self.infobox[case])
             self.infobox[case] = re.sub(
