@@ -9,19 +9,25 @@ from pywikibot.textlib import extract_templates_and_params
 from tofawiki.cache.redis_cache import RedisCache
 from tofawiki.domain.subjects.subject import Subject
 from tofawiki.domain.text_translator import TextTranslator
+from tofawiki.domain.wikidata_translator import WikidataTranslator
 from tofawiki.util.translate_util import dater, get_lang, sortcat
 
 
 class UnknownSubject(Subject):
     def __init__(self, service):
+        """
+
+        :type service: tofawiki.services.translation.translate.Translate
+        """
         self.cache = RedisCache(service.config['cache']['redis_cache'])
-        self.text_translator = TextTranslator(pywikibot.Site('en'),
+        self.text_translator = TextTranslator(service.site,
                                               pywikibot.Site('fa'), self.cache)
+        self.wikidata_translator = WikidataTranslator(service.site.data_repository(),
+                                                      self.cache)
         self.service = service
         self.breaks = '\n\n'
         self.info = defaultdict(list)
         self.infobox = OrderedDict()
-        self.fasite = pywikibot.Site('fa')
         self.stub_type = 'موضوع'
         self.infobox_title = ''
         self.infobox_exceptions = ['embed']
@@ -135,7 +141,7 @@ class UnknownSubject(Subject):
                     self.info['twitter'] = i[1]['1']
             if i[0].lower() == 'coord':
                 if 'title' in i[1].get('display', 'title'):
-                    coord = re.findall(r"(\{\{[Cc]oord *?\|.+?\}\})", self.service.article.text)
+                    coord = re.findall(r"({{[Cc]oord *?\|.+?\}\})", self.service.article.text)
                     if coord and "{{" not in coord[0]:
                         self.info['coord'] = coord
             if "imdb name" in i[0].lower():

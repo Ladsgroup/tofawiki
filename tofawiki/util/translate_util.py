@@ -1,6 +1,5 @@
 import re
 
-import pywikibot
 
 # Disclaimer: This codes are super old and creepy, we need to rewrite them altogether
 FA_LETTERS = r"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]"
@@ -103,78 +102,6 @@ def get_lang(a, b):
         return u"{{lang" + a.split("{{lang")[1].split("}}")[0] + u"}}"
     else:
         return u"{{lang-en|" + b + u"}}"
-
-
-def data2fa(number, repo, cache=None, strict=False, ff=False):
-    if not number:
-        return ''
-    if isinstance(number, pywikibot.ItemPage):
-        number = number.getID(True)
-    cache_key = 'translate:fawiki:wikidatawiki:linktrans:'
-    if strict:
-        cache_key += 'strict:'
-    else:
-        cache_key += 'no_strict:'
-    cache_key += str(number)
-    if cache and cache.get_value(cache_key):
-        return cache.get_value(cache_key)
-    item = pywikibot.ItemPage(repo, 'Q%d' % int(number))
-    try:
-        item.get()
-    except:
-        return ''
-    if isinstance(item.sitelinks, list):
-        item.sitelinks = {}
-    if 'fawiki' in item.sitelinks:
-        name = item.sitelinks['fawiki']
-        if cache:
-            cache.write_new_cache(cache_key, name)
-        return name
-    if strict:
-        return ''
-    if isinstance(item.labels, list):
-        item.labels = {}
-    if 'fa' in item.labels:
-        name = item.labels['fa']
-        if cache:
-            cache.write_new_cache(cache_key, name)
-        return name
-    if not ff:
-        return ''
-    try:
-        return item.labels['en']
-    except:
-        return ''
-
-
-def occu(a, b, text_translator, repo):
-    """
-    :type text_translator: tofawiki.domain.text_translator.TextTranslator
-    """
-    listoc = []
-    if a:
-        for i in a:
-            ff = data2fa(i, repo, text_translator.cache)
-            if ff:
-                listoc.append(ff)
-    if not listoc:
-        links = text_translator.translator(u"[[" + b.replace(", ", u"]][[") + u"]]")
-        for i in re.findall("\[\[(.+?)(?:\]\]|\|)", links):
-            if re.search(FA_LETTERS, i):
-                if i:
-                    listoc.append(i)
-    textg = ''
-    try:
-        fff = listoc[-2]
-    except IndexError:
-        fff = None
-    for i in listoc:
-        textg += u"[[" + i + u"]]، "
-        if i == fff:
-            textg += u"و "
-    if textg.count(u"،") == 1:
-        textg = textg.replace(u"،", u"")
-    return textg[:-2] + u" "
 
 
 def officefixer(text):

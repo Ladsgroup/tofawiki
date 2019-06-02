@@ -1,12 +1,8 @@
 import re
 
-import pywikibot
-from pywikibot import pagegenerators
-
 from tofawiki.domain.subjects.unknown import UnknownSubject
-from tofawiki.util.translate_util import (FA_LETTERS, data2fa, dater, en2fa,
-                                          get_lang, khoshgeler, linker, occu,
-                                          officefixer)
+from tofawiki.util.translate_util import (FA_LETTERS, dater, en2fa,
+                                          get_lang, khoshgeler, linker, officefixer)
 
 BIRTH_DATE = 'birth_date'
 DEATH_DATE = 'death_date'
@@ -198,9 +194,7 @@ class HumanSubject(UnknownSubject):
             fields = []
             if 101 in self.info:
                 fields = [
-                    linker(data2fa(self.info[101][0],
-                           repo=self.fasite.data_repository(),
-                           cache=self.cache))
+                    linker(self.wikidata_translator.data2fa(self.info[101][0]))
                 ]
             if not fields:
                 fields = [self.text_translator.translator(self.infobox.get('field', ''))]
@@ -214,17 +208,13 @@ class HumanSubject(UnknownSubject):
                 long_occupation = self.infobox[OCCUPATION]
 
         if not long_occupation or not re.search(FA_LETTERS, long_occupation):
-            long_occupation = occu(
-                self.info[106],
-                occupation,
-                text_translator=self.text_translator,
-                repo=self.fasite.data_repository())
+            long_occupation = self.occu(self.info[106], occupation)
 
         awards = u""
         if 166 in self.info:
             awards_list = []
             for i in self.info[166]:
-                award = data2fa(i, self.fasite.data_repository(), self.cache)
+                award = self.wikidata_translator.data2fa(i)
                 if award:
                     awards_list.append(linker(award))
             # Clean up duplicates
@@ -234,7 +224,7 @@ class HumanSubject(UnknownSubject):
         if 54 in self.info:
             clubs_list = []
             for i in self.info[54]:
-                club = data2fa(i, self.fasite.data_repository(), self.cache)
+                club = self.wikidata_translator.data2fa(i)
                 if club:
                     clubs_list.append(linker(club))
             clubs = " ".join(list(set(clubs_list))).strip()
@@ -341,40 +331,13 @@ class HumanSubject(UnknownSubject):
             elif wd_id in [569, 570]:
                 self.infobox[name] = self.info[wd_id][0].toTimestr()[1:].split('T')[0]
             else:
-                res = data2fa(
-                    self.info[wd_id][0],
-                    self.fasite.data_repository(),
-                    self.cache,
-                    strict=True)
+                res = self.wikidata_translator.data2fa(self.info[wd_id][0], strict=True)
                 if not res:
                     return
                 self.infobox[name] = linker(res)
 
     def films(self):
-        gen = pagegenerators.ReferringPageGenerator(self.service.item)
-        pregen = pagegenerators.PreloadingGenerator(gen)
-        filmsandseries = []
-        for page in pregen:
-            if page.namespace() != 0:
-                continue
-            try:
-                page.get()
-                item = pywikibot.ItemPage(self.fasite.data_repository(), page.title())
-                item.get()
-            except:
-                continue
-            if 'P161' not in item.claims:
-                continue
-            for claim in item.claims['P161']:
-                if not claim.getTarget():
-                    continue
-                if claim.getTarget().getID() == self.service.item.getID():
-                    res = data2fa(
-                        int(item.title().replace("Q", '')),
-                        self.fasite.data_repository(),
-                        self.cache)
-                    if res:
-                        filmsandseries.append(res)
+        filmsandseries = self.wikidata_translator.getRefferedItems(self.service.item, 'P161')
         explanation = u"از فیلم‌ها یا برنامه‌های تلویزیونی که وی در آن نقش داشته است می‌توان به "
         film_text = self.breaks + explanation + " اشاره کرد."
         text = u''
@@ -393,3 +356,29 @@ class HumanSubject(UnknownSubject):
         if not text == film_text:
             return text
         return u''
+
+    def occu(self, a, b):
+        listoc = []
+        if a:
+            for i in a:
+                ff = self.wikidata_translator.data2fa(i)
+                if ff:
+                    listoc.append(ff)
+        if not listoc:
+            links = self.text_translator.translator(u"[[" + b.replace(", ", u"]][[") + u"]]")
+            for i in re.findall("\[\[(.+?)(?:\]\]|\|)", links):
+                if re.search(FA_LETTERS, i):
+                    if i:
+                        listoc.append(i)
+        textg = ''
+        try:
+            fff = listoc[-2]
+        except IndexError:
+            fff = None
+        for i in listoc:
+            textg += u"[[" + i + u"]]، "
+            if i == fff:
+                textg += u"و "
+        if textg.count(u"،") == 1:
+            textg = textg.replace(u"،", u"")
+        return textg[:-2] + u" "
