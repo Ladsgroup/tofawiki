@@ -1,9 +1,11 @@
 import re
+
 import pywikibot
 
+from tofawiki.domain.subjects.human import HumanSubject
+from tofawiki.domain.subjects.unknown import UnknownSubject
+
 from ...services.service import Service
-from .subjects.unknown import UnknownSubject
-from .subjects.human import HumanSubject
 
 
 class Translate(Service):

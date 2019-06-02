@@ -15,7 +15,6 @@ import sys
 import traceback
 from importlib import import_module
 
-
 USAGE = """Usage:
     tofawiki (-h | --help)
     tofawiki <utility> [-h | --help]\n"""

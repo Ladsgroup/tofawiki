@@ -1,8 +1,8 @@
+import json
+
 from flask import Response
 
 from ...services.translation.translate import Translate
-
-import json
 
 
 def configure(bp, config):

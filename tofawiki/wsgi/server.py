@@ -1,6 +1,8 @@
 import os
-from . import routes
+
 from flask import Blueprint, Flask
+
+from . import routes
 
 
 def configure(config):

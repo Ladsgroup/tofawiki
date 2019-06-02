@@ -1,4 +1,5 @@
 import re
+
 import pywikibot
 
 # Disclaimer: This codes are super old and creepy, we need to rewrite them altogether
@@ -26,92 +27,6 @@ def linker(a):
     if "(" in a:
         return u"[[" + a + u"|]]"
     return u"[[%s]]" % a
-
-
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
-
-# Note: batch size shouldn't exceed 50
-def link_translator_api(batch, ensite, fasite):
-    params = {
-        'action': 'query',
-        'redirects': '',
-        'titles': '|'.join(batch)
-    }
-    query_res = pywikibot.data.api.Request(site=ensite, **params).submit()
-    redirects = {i['from']: i['to'] for i in query_res['query'].get('redirects', [])}
-    normalizeds = {i['from']: i['to'] for i in query_res['query'].get('normalized', [])}
-
-    # Resolve normalized redirects and merge normalizeds dict into redirects at the same time
-    for k, v in normalizeds.items():
-        redirects[k] = redirects.get(v, v)
-
-    wikidata = pywikibot.Site('wikidata', 'wikidata')
-
-    params = {
-        'action': 'wbgetentities',
-        'sites': ensite.dbName(),
-        'titles': '|'.join([redirects.get(i, i) for i in batch]),
-        'props': 'sitelinks'
-    }
-
-    try:
-        query_res = pywikibot.data.api.Request(site=wikidata, **params).submit()
-    except:
-        return {}
-
-    matches_titles = {}
-    entities = query_res.get('entities', {})
-    endbName = ensite.dbName()
-    fadbName = fasite.dbName()
-    for qid, entity in entities.items():
-        if fadbName in entity.get('sitelinks', {}):
-            en_title = entity['sitelinks'][endbName]
-            fa_title = entity['sitelinks'][fadbName]
-
-            # for not updated since addition of badges on Wikidata items
-            if not isinstance(en_title, str):
-                en_title = en_title['title']
-                fa_title = fa_title['title']
-
-            matches_titles[en_title] = fa_title
-
-    res = {}
-    for i in batch:
-        p = redirects[i] if (i in redirects) else i
-        if p in matches_titles:
-            if i in redirects:
-                res[p] = matches_titles[p]
-            res[i] = matches_titles[p]
-
-    return res
-
-
-def link_translator(batch, ensite, fasite, cache=None):
-    cache_prefix = 'translate:fawiki:enwiki:linktrans:'
-    res = {}
-    api_batch = []
-    for name in batch:
-        if cache and cache.get_value(cache_prefix + name):
-            res[name] = cache.get_value(cache_prefix + name)
-        else:
-            api_batch.append(name)
-    if not api_batch:
-        return res
-
-    api_res = {}
-    for chunk in chunks(api_batch, 50):
-        api_res.update(link_translator_api(chunk, ensite=ensite, fasite=fasite))
-
-    for case in api_res:
-        if cache:
-            cache.write_new_cache(cache_prefix + case, api_res[case])
-        if case in batch:
-            res[case] = api_res[case]
-
-    return res
 
 
 def khoshgeler(a):
@@ -146,49 +61,6 @@ def en2fa(i):
     return b
 
 
-def translator(a, ensite, fasite, cache=None):
-    if not a:
-        return ''
-    b = a
-    names = re.findall("\[\[(.+?)(?:\||\]\])", a)
-    res = link_translator(names, ensite, fasite, cache)
-    for name in names:
-        if name in res:
-            b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
-                       re.escape(name), linker(res[name]), b)
-    return b
-
-
-def translator_taki(a, ensite, fasite, strict=False, cache=None):
-    b = a
-    cache_prefix = 'translate:fawiki:enwiki:linktrans:'
-    for name in re.findall("\[\[(.+?)(?:\||\]\])", a):
-        if cache and cache.get_value(cache_prefix + name):
-            res = cache.get_value(cache_prefix + name)
-            b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
-                       re.escape(name), res, b)
-        else:
-            try:
-                pagename = pywikibot.Page(ensite, name)
-            except:
-                continue
-            if pagename.isRedirectPage():
-                pagename = pagename.getRedirectTarget()
-            try:
-                item = pywikibot.ItemPage.fromPage(pagename)
-                item.get()
-            except:
-                continue
-            if not item.sitelinks.get('fawiki'):
-                continue
-            if cache:
-                cache.write_new_cache(cache_prefix + name, linker(item.sitelinks['fawiki']))
-            return linker(item.sitelinks['fawiki'])
-    if strict:
-        return ""
-    return a
-
-
 def sortcat(entext, entitle, title):
     if u"{{DEFAULTSORT:" in entext:
         enok = entext.split(u"{{DEFAULTSORT:")[1].split(u"}}")[0]
@@ -205,34 +77,6 @@ def sortcat(entext, entitle, title):
             ok = ok.replace(u"(((" + str(i) + u")))", thefalist[i], 1)
         return u"\n{{ترتیب‌پیش‌فرض:" + ok + u"}}"
     return ""
-
-
-def catadder(entext, ensite, fasite, cache=None):
-    cats = u""
-    res = link_translator(
-        re.findall(r'\[\[([Cc]ategory:.+?)(?:\]\]|\|)', entext), ensite, fasite, cache)
-    res = list(res.values())
-    res.sort()
-    for name in res:
-        cats = cats + u"\n[[" + name + "]]"
-    return cats
-
-
-def seealsoer(entext, ensite, fasite, cache=None):
-    re_see = re.compile(r"\=\= *?[Ss]ee [Aa]lso *?\=\=(.+?)\=\=", re.DOTALL)
-    res_see = re_see.findall(entext)
-    if not res_see:
-        return ''
-    re_see2 = re.compile(r"\* *?\[\[(.+?)(?:\||\]\])")
-    text_see = u"\n\n== جستارهای وابسته =="
-
-    for line_see in re_see2.findall(res_see[0]):
-        line_see2 = translator_taki(linker(line_see), ensite, fasite, True, cache)
-        if line_see2:
-            text_see += u"\n*" + line_see2
-    if text_see == u"\n\n== جستارهای وابسته ==":
-        return u""
-    return text_see
 
 
 def dater(a):
@@ -303,15 +147,18 @@ def data2fa(number, repo, cache=None, strict=False, ff=False):
         return ''
 
 
-def occu(a, b, ensite, fasite, repo, cache=None):
+def occu(a, b, text_translator, repo):
+    """
+    :type text_translator: tofawiki.domain.text_translator.TextTranslator
+    """
     listoc = []
     if a:
         for i in a:
-            ff = data2fa(i, repo, cache)
+            ff = data2fa(i, repo, text_translator.cache)
             if ff:
                 listoc.append(ff)
     if not listoc:
-        links = translator(u"[[" + b.replace(", ", u"]][[") + u"]]", ensite, fasite, cache)
+        links = text_translator.translator(u"[[" + b.replace(", ", u"]][[") + u"]]")
         for i in re.findall("\[\[(.+?)(?:\]\]|\|)", links):
             if re.search(FA_LETTERS, i):
                 if i:

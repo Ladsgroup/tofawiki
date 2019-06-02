@@ -1,11 +1,12 @@
 import re
 
-from .unknown import UnknownSubject
-from ....util.translate_util import (dater, translator, get_lang, en2fa, data2fa, linker,
-                                     officefixer, khoshgeler, occu, FA_LETTERS)
-
 import pywikibot
 from pywikibot import pagegenerators
+
+from tofawiki.domain.subjects.unknown import UnknownSubject
+from tofawiki.util.translate_util import (FA_LETTERS, data2fa, dater, en2fa,
+                                          get_lang, khoshgeler, linker, occu,
+                                          officefixer)
 
 BIRTH_DATE = 'birth_date'
 DEATH_DATE = 'death_date'
@@ -97,8 +98,10 @@ class HumanSubject(UnknownSubject):
             else:
                 national_teams_text += self.breaks + u"وی همچنین در تیم‌های ملی فوتبال " + \
                    khoshgeler(' '.join(self.national_teams)) + u" بازی کرده است."
-            national_teams_text = translator(national_teams_text, self.service.article.site, self.fasite, self.cache)
-            national_teams_text = re.sub(r'\[\[تیم ملی فوتبال (.+?)\]\]', r'[[تیم ملی فوتبال \1|\1]]', national_teams_text)
+            national_teams_text = self.text_translator.translator(national_teams_text)
+            national_teams_text = re.sub(r'\[\[تیم ملی فوتبال (.+?)\]\]',
+                                         r'[[تیم ملی فوتبال \1|\1]]',
+                                         national_teams_text)
             text += national_teams_text
         if self.medals != [u'۰', u'۰', u'۰']:
             text += self.breaks + u'وی در مسابقات کشوری و بین‌المللی در مجموع برندهٔ '
@@ -200,27 +203,22 @@ class HumanSubject(UnknownSubject):
                            cache=self.cache))
                 ]
             if not fields:
-                fields = [
-                    translator(self.infobox.get('field', ''),
-                               self.service.article.site, self.fasite, self.cache)]
+                fields = [self.text_translator.translator(self.infobox.get('field', ''))]
             if fields:
                 long_occupation += u" در زمینه " + khoshgeler(fields[0])
 
         if OCCUPATION in self.infobox:
             if '[[' not in self.infobox[OCCUPATION]:
                 linked = '[[' + self.infobox[OCCUPATION].replace(', ', ']], [[') + ']]'
-                self.infobox[OCCUPATION] = translator(
-                    linked, self.service.article.site, self.fasite, self.cache)
+                self.infobox[OCCUPATION] = self.text_translator.translator(linked)
                 long_occupation = self.infobox[OCCUPATION]
 
         if not long_occupation or not re.search(FA_LETTERS, long_occupation):
             long_occupation = occu(
                 self.info[106],
                 occupation,
-                fasite=self.fasite,
-                ensite=self.service.article.site,
-                repo=self.fasite.data_repository(),
-                cache=self.cache)
+                text_translator=self.text_translator,
+                repo=self.fasite.data_repository())
 
         awards = u""
         if 166 in self.info:
@@ -241,7 +239,7 @@ class HumanSubject(UnknownSubject):
                     clubs_list.append(linker(club))
             clubs = " ".join(list(set(clubs_list))).strip()
         awardstext2 = ''
-        awardstext = translator(awardstext, self.service.article.site, self.fasite, self.cache)
+        awardstext = self.text_translator.translator(awardstext)
         for awname in re.findall(r"\[\[(.+?)(?:\||\]\])", awardstext):
             if re.search(u"نشان|جایزه|مدال", awname):
                 awardstext2 += linker(awname)
@@ -273,8 +271,7 @@ class HumanSubject(UnknownSubject):
                 self.infobox[DEATH_DATE] = yearfa[0]
 
         if not long_occupation.strip() and occupation.strip():
-            long_occupation = translator(
-                occupation, self.service.article.site, self.fasite, self.cache)
+            long_occupation = self.text_translator.translator(occupation)
         if long_occupation.strip():
             self.occupation = long_occupation
         if occupation.strip():
@@ -315,7 +312,7 @@ class HumanSubject(UnknownSubject):
                 r'\1دونفره',
                 self.infobox[case])
             if re.search(r'nationalteam\d*?', case):
-                if self.infobox[case].strip() and not 'update' in case:
+                if self.infobox[case].strip() and 'update' not in case:
                     self.national_teams.append(self.infobox[case])
 
         values = ' '.join(self.infobox.values())

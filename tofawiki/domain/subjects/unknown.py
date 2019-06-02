@@ -1,19 +1,22 @@
-import pywikibot
-import traceback
 import re
+import traceback
+from collections import OrderedDict, defaultdict
 
-from .subject import Subject
-from ....cache.redis_cache import RedisCache
-from ....util.translate_util import seealsoer, sortcat, catadder, dater, translator, get_lang
-
+import pywikibot
 from jinja2 import Template
-from collections import defaultdict, OrderedDict
 from pywikibot.textlib import extract_templates_and_params
+
+from tofawiki.cache.redis_cache import RedisCache
+from tofawiki.domain.subjects.subject import Subject
+from tofawiki.domain.text_translator import TextTranslator
+from tofawiki.util.translate_util import dater, get_lang, sortcat
 
 
 class UnknownSubject(Subject):
     def __init__(self, service):
         self.cache = RedisCache(service.config['cache']['redis_cache'])
+        self.text_translator = TextTranslator(pywikibot.Site('en'),
+                                              pywikibot.Site('fa'), self.cache)
         self.service = service
         self.breaks = '\n\n'
         self.info = defaultdict(list)
@@ -42,7 +45,7 @@ class UnknownSubject(Subject):
                 if i_test not in self.infobox_exceptions:
                     res += u"\n| " + i + u" = " + self.infobox[i]
             res += '\n}}'
-        return translator(res, self.service.article.site, self.fasite, self.cache)
+        return self.text_translator.translator(res)
 
     def get_stub_type(self):
         return self.stub_type
@@ -66,7 +69,7 @@ class UnknownSubject(Subject):
         enpage = self.service.article
         entext = enpage.get()
         faname = self.service.faname
-        text = seealsoer(entext, enpage.site, self.fasite, self.cache)
+        text = self.text_translator.seealsoer(entext)
         text += self.breaks + u"== منابع ==\n{{پانویس|چپ‌چین=بله}}"
         url = enpage.permalink().replace("&useskin=monobook", "")
         text += u"\n*{{یادکرد-ویکی|پیوند =" + url + \
@@ -97,7 +100,7 @@ class UnknownSubject(Subject):
         text += u"\n{{" + self.get_stub_type() + "-خرد}}" + self.breaks
         text = text + sortcat(entext,
                               enpage.title().split(" (")[0], faname.split(" (")[0])
-        text = text + catadder(entext, enpage.site, self.fasite, self.cache)
+        text = text + self.text_translator.catadder(entext)
         return text + self.breaks + u"[[en:%s]]" % enpage.title()
 
     @staticmethod

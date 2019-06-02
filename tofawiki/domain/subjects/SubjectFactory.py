@@ -1,6 +1,9 @@
 import json
 import os
 
+from .file_based_subject import FileBasedSubject
+
+
 class SubjectFactory():
     def __init__(self, path, service):
         self.path = path

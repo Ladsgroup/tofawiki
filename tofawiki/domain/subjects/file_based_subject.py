@@ -1,4 +1,5 @@
-from .unknown import UnknownSubject
+from tofawiki.domain.subjects.unknown import UnknownSubject
+
 
 class FileBasedSubject(UnknownSubject):
     def __init__(self, config, service):
