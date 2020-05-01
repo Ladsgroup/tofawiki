@@ -45,23 +45,24 @@ class TextTranslator:
                 b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
                            re.escape(name), res, b)
             else:
-                try:
-                    pagename = pywikibot.Page(self.source, name)
-                except:
+                # TODO: Batch
+                params = {
+                    'action': 'query',
+                    'redirects': '',
+                    'titles': name,
+                    'prop': 'langlinks',
+                    'lllang': 'fa'
+                }
+                query_res = pywikibot.data.api.Request(site=self.source, **params).submit()['query']['pages']
+                for page_id in query_res:
+                    langlinks = query_res[page_id]['langlinks']
+                if not langlinks:
                     continue
-                if pagename.isRedirectPage():
-                    pagename = pagename.getRedirectTarget()
-                try:
-                    item = pywikibot.ItemPage.fromPage(pagename)
-                    item.get()
-                except:
-                    continue
-                if not item.sitelinks.get('fawiki'):
-                    continue
+                fa_name = langlinks['*']
                 if self.cache:
                     self.cache.write_new_cache(cache_prefix + name,
-                                               linker(item.sitelinks['fawiki']))
-                return linker(item.sitelinks['fawiki'])
+                                               linker(fa_name))
+                return linker(fa_name)
         if strict:
             return ""
         return text

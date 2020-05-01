@@ -1,7 +1,8 @@
 Flask
 Flask-Jsonpify
-pywikibot==3.0.dev0
+pywikibot
 docopt
+sparqlwrapper
 yamlconf
 jinja2
 redis >= 2.10.5, < 2.999

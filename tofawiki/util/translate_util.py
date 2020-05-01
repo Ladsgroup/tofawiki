@@ -1,6 +1,5 @@
 import re
 
-
 # Disclaimer: This codes are super old and creepy, we need to rewrite them altogether
 FA_LETTERS = r"[آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]"
 

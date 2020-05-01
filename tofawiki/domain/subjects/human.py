@@ -1,8 +1,8 @@
 import re
 
 from tofawiki.domain.subjects.unknown import UnknownSubject
-from tofawiki.util.translate_util import (FA_LETTERS, dater, en2fa,
-                                          get_lang, khoshgeler, linker, officefixer)
+from tofawiki.util.translate_util import (FA_LETTERS, dater, en2fa, get_lang,
+                                          khoshgeler, linker, officefixer)
 
 BIRTH_DATE = 'birth_date'
 DEATH_DATE = 'death_date'
