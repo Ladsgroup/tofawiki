@@ -55,7 +55,7 @@ class TextTranslator:
                 }
                 query_res = pywikibot.data.api.Request(site=self.source, **params).submit()['query']['pages']
                 for page_id in query_res:
-                    langlinks = query_res[page_id]['langlinks']
+                    langlinks = query_res[page_id].get('langlinks')
                 if not langlinks:
                     continue
                 fa_name = langlinks['*']
