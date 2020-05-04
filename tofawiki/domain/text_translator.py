@@ -58,7 +58,10 @@ class TextTranslator:
                     langlinks = query_res[page_id].get('langlinks')
                 if not langlinks:
                     continue
-                fa_name = langlinks['*']
+                if isinstance(langlinks, dict):
+                    fa_name = langlinks['*']
+                else:
+                    fa_name = langlinks[0]['*']
                 if self.cache:
                     self.cache.write_new_cache(cache_prefix + name,
                                                linker(fa_name))
