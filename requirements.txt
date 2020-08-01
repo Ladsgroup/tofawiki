@@ -5,4 +5,4 @@ docopt
 sparqlwrapper
 yamlconf
 jinja2
-redis >= 2.10.5, < 2.999
+redis

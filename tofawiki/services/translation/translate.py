@@ -2,6 +2,7 @@ import re
 
 import pywikibot
 
+from tofawiki.domain.subjects.category import CatergorySubject
 from tofawiki.domain.subjects.human import HumanSubject
 from tofawiki.domain.subjects.unknown import UnknownSubject
 
@@ -53,6 +54,8 @@ class Translate(Service):
         return self.subject.get_translation()
 
     def get_subject_callback(self):
+        if self.article.namespace() == 14:
+            return CatergorySubject
         instances = self.get_instances()
         if 5 in instances or 'infobox person' in self.article.text.lower():
             return HumanSubject
