@@ -29,8 +29,6 @@ class CatergorySubject(Subject):
         enwiki_lead = self.service.article.text.split("\n==")[0]
         text = ''
         for i in extract_templates_and_params(enwiki_lead, None, strip=True):
-            if i[1]:
-                continue
             title = i[0]
             if title.startswith('Template:'):
                 title = title[len('Template:'):]
