@@ -1,5 +1,5 @@
 # Tofawiki
-It's source of the tofawiki service at tofawiki.wmflabs.org
+It's source of the tofawiki service at tofawiki.wmcloud.org
 
 
 ## Server
