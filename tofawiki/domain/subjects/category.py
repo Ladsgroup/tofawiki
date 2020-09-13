@@ -33,7 +33,7 @@ class CatergorySubject(Subject):
             if title.startswith('Template:'):
                 title = title[len('Template:'):]
             text += self.text_translator.translator_taki('[[Template:' + title + ']]') + '\n'
-        return text.replace('[[الگو:', '{{').replace(']]', '}}')
+        return text.replace('[[الگو:', '{{').replace('[[Template:', '{{').replace(']]', '}}')
 
     def extract_info(self):
         for property_number in self.service.item.claims:
