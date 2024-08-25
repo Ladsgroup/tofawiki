@@ -99,11 +99,11 @@ class UnknownSubject(Subject):
                 text += u"* {{twitter|" + self.info['twitter'] + u"}}\n"
         if self.info['coord']:
             text += self.info['coord'][0] + "\n"
+        text += u"\n{{" + self.get_stub_type() + "-خرد}}" + self.breaks
         for i in self.info:
             if i in authority_controls:
                 text += "{{داده‌های کتابخانه‌ای}}\n"
                 break
-        text += u"\n{{" + self.get_stub_type() + "-خرد}}" + self.breaks
         text = text + sortcat(entext,
                               enpage.title().split(" (")[0], faname.split(" (")[0])
         text = text + self.text_translator.catadder(entext)
