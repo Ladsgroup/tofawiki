@@ -13,11 +13,29 @@ Config is read from the directory named by `$TOFAWIKI_CONFIG`, falling back to
 
 ### Installation
 
-
 #### Dependencies
 Installation will require some additional packages to be available.
 
-  `sudo apt-get install python3-dev python3-setuptools`
+  `sudo apt-get install python3-dev`
+
+#### Installing tofawiki
+Packaging metadata lives in `pyproject.toml`; Python 3.9 or newer is required.
+
+    $ pip install .
+
+or, for development, an editable install:
+
+    $ pip install -e .
+
+Runtime dependencies are declared in `requirements.txt`, which `pyproject.toml`
+reads, so `pip install -r requirements.txt` and the package metadata cannot
+drift apart. The version is read from `tofawiki/__init__.py`, so that is the
+only place to bump it for a release.
+
+To build a wheel and an sdist:
+
+    $ pip install build
+    $ python -m build
 
 ### Starting the dev server
 

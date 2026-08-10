@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tofawiki"
+description = "A service to bring articles easily"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Amir Sarabadani", email = "ladsgroup@gmail.com"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "Topic :: Utilities",
+]
+# version comes from tofawiki/__init__.py, dependencies from requirements.txt
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/Ladsgroup/tofawiki"
+Source = "https://github.com/Ladsgroup/tofawiki"
+
+[project.scripts]
+tofawiki = "tofawiki.tofawiki:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "tofawiki.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.packages.find]
+include = ["tofawiki*"]
+
+[tool.setuptools.package-data]
+tofawiki = ["cache/data/*.json"]
