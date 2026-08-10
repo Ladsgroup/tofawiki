@@ -1,13 +1,11 @@
 import traceback
 from collections import defaultdict
 
-import pywikibot
-from pywikibot.textlib import extract_templates_and_params
-
 from tofawiki.cache.redis_cache import RedisCache
 from tofawiki.domain.subjects.subject import Subject
 from tofawiki.domain.text_translator import TextTranslator
 from tofawiki.domain.wikidata_translator import WikidataTranslator
+from tofawiki.mediawiki import Site, extract_templates_and_params
 
 
 class CatergorySubject(Subject):
@@ -18,7 +16,7 @@ class CatergorySubject(Subject):
         """
         self.cache = RedisCache(service.config['cache']['redis_cache'])
         self.text_translator = TextTranslator(service.site,
-                                              pywikibot.Site('fa'), self.cache)
+                                              Site('fa'), self.cache)
         self.wikidata_translator = WikidataTranslator(service.site.data_repository(),
                                                       self.cache)
         self.service = service

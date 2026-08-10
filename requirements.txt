@@ -1,5 +1,6 @@
 Flask>=3.0
-pywikibot>=9.0
+requests>=2.28
+mwparserfromhell>=0.6
 sparqlwrapper
 jinja2
 PyYAML

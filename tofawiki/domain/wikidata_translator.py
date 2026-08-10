@@ -1,9 +1,9 @@
 import re
 import sys
 
-import pywikibot
-from pywikibot import ItemPage
 from SPARQLWrapper import JSON, SPARQLWrapper
+
+from tofawiki.mediawiki import ItemPage, Request
 
 
 class WikidataTranslator:
@@ -33,7 +33,7 @@ class WikidataTranslator:
             'props': 'sitelinks|labels',
             'languages': 'fa|en'
         }
-        query_res = pywikibot.data.api.Request(
+        query_res = Request(
             site=self.repo, **params).submit()['entities'][item_id]
         if query_res.get('sitelinks', {}).get('fawiki'):
             name = query_res['sitelinks']['fawiki']['title']

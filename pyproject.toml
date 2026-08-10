@@ -40,8 +40,6 @@ tofawiki = ["cache/data/*.json"]
 [tool.ruff]
 line-length = 100
 target-version = "py39"
-# pywikibot executes this one with names such as `usernames` already defined.
-extend-exclude = ["user-config.py"]
 
 [tool.ruff.lint]
 # pycodestyle + pyflakes (what flake8 gave us), plus import sorting,

@@ -1,7 +1,6 @@
 import re
 
-import pywikibot
-
+from tofawiki.mediawiki import Request, Site
 from tofawiki.util.translate_util import linker
 
 
@@ -52,7 +51,7 @@ class TextTranslator:
                     'prop': 'langlinks',
                     'lllang': 'fa'
                 }
-                query_res = pywikibot.data.api.Request(
+                query_res = Request(
                     site=self.source, **params).submit()['query']['pages']
                 for page_id in query_res:
                     langlinks = query_res[page_id].get('langlinks')
@@ -113,7 +112,7 @@ class TextTranslator:
             'redirects': '',
             'titles': '|'.join(batch)
         }
-        query_res = pywikibot.data.api.Request(site=self.source, **params).submit()
+        query_res = Request(site=self.source, **params).submit()
         redirects = {i['from']: i['to'] for i in query_res['query'].get('redirects', [])}
         normalizeds = {i['from']: i['to'] for i in query_res['query'].get('normalized', [])}
 
@@ -121,7 +120,7 @@ class TextTranslator:
         for k, v in normalizeds.items():
             redirects[k] = redirects.get(v, v)
 
-        wikidata = pywikibot.Site('wikidata', 'wikidata')
+        wikidata = Site('wikidata', 'wikidata')
 
         params = {
             'action': 'wbgetentities',
@@ -131,7 +130,7 @@ class TextTranslator:
         }
 
         try:
-            query_res = pywikibot.data.api.Request(site=wikidata, **params).submit()
+            query_res = Request(site=wikidata, **params).submit()
         except Exception:
             return {}
 

@@ -1,30 +1,30 @@
 import re
 
-import pywikibot
-
 from tofawiki.domain.subjects.category import CatergorySubject
 from tofawiki.domain.subjects.human import HumanSubject
 from tofawiki.domain.subjects.unknown import UnknownSubject
 
+from ...mediawiki import ItemPage, Page, Site
+from ...mediawiki.exceptions import IsRedirectPageError, NoPageError
 from ...services.service import Service
 
 
 class Translate(Service):
     def __init__(self, wiki, article, faname, config):
         self.wiki = wiki
-        self.site = pywikibot.Site(config[wiki]['code_lang'])
-        self.article = pywikibot.Page(self.site, article)
+        self.site = Site(config[wiki]['code_lang'])
+        self.article = Page(self.site, article)
         self.faname = self.normalize_fa(faname)
         self.config = config
         self.item = None
 
     def validate(self):
-        fapage = pywikibot.Page(pywikibot.Site('fa'), self.faname)
+        fapage = Page(Site('fa'), self.faname)
         try:
             fapage.get()
-        except pywikibot.exceptions.NoPageError:
+        except NoPageError:
             pass
-        except pywikibot.exceptions.IsRedirectPageError:
+        except IsRedirectPageError:
             return {'error': 'Article in Perisan Wikipedia exist'}
         else:
             return {'error': 'Article in Perisan Wikipedia exist'}
@@ -36,12 +36,12 @@ class Translate(Service):
 
         try:
             self.article.get()
-        except pywikibot.exceptions.NoPageError:
+        except NoPageError:
             return {'error': 'Article in English Wikipedia does not exist'}
-        self.item = pywikibot.ItemPage.fromPage(self.article)
         try:
+            self.item = ItemPage.fromPage(self.article)
             self.item.get()
-        except pywikibot.exceptions.NoPageError:
+        except NoPageError:
             return {'error': 'The item in Wikidata does not exist'}
 
         return True
