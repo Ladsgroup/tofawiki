@@ -22,9 +22,9 @@ class Translate(Service):
         fapage = pywikibot.Page(pywikibot.Site('fa'), self.faname)
         try:
             fapage.get()
-        except pywikibot.NoPage:
+        except pywikibot.exceptions.NoPageError:
             pass
-        except pywikibot.IsRedirectPage:
+        except pywikibot.exceptions.IsRedirectPageError:
             return {'error': 'Article in Perisan Wikipedia exist'}
         else:
             return {'error': 'Article in Perisan Wikipedia exist'}
@@ -36,12 +36,12 @@ class Translate(Service):
 
         try:
             self.article.get()
-        except pywikibot.NoPage:
+        except pywikibot.exceptions.NoPageError:
             return {'error': 'Article in English Wikipedia does not exist'}
         self.item = pywikibot.ItemPage.fromPage(self.article)
         try:
             self.item.get()
-        except pywikibot.NoPage:
+        except pywikibot.exceptions.NoPageError:
             return {'error': 'The item in Wikidata does not exist'}
 
         return True
