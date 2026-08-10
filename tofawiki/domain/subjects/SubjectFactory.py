@@ -4,7 +4,7 @@ import os
 from .file_based_subject import FileBasedSubject
 
 
-class SubjectFactory():
+class SubjectFactory:
     def __init__(self, path, service):
         self.path = path
         self.service = service
@@ -12,7 +12,7 @@ class SubjectFactory():
     def new_from_json(self, name):
         if not os.path.exists(os.path.join(self.path, name)):
             return None
-        with open(os.path.join(self.path, name), 'r') as f:
+        with open(os.path.join(self.path, name)) as f:
             config = json.loads(f.read())
 
         return self.new_from_config(config)

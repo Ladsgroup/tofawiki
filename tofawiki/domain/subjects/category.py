@@ -47,7 +47,7 @@ class CatergorySubject(Subject):
         try:
             self.extract_info()
             content = self.get_lead() + self.breaks + self.get_footer()
-        except:
+        except Exception:
             return {
                 'error': 'Unable to translate. Copy paste this for Amir: ' + traceback.format_exc()
             }
@@ -59,9 +59,9 @@ class CatergorySubject(Subject):
         text = ''
 
         if self.info[373]:
-           text += u"{{انبار-رده}}\n"
+           text += "{{انبار-رده}}\n"
         if self.info[301]:
             text += "{{اصلی رده}}\n"
 
         text = text + self.text_translator.catadder(entext)
-        return text + self.breaks + u"[[en:%s]]" % enpage.title()
+        return text + self.breaks + f"[[en:{enpage.title()}]]"

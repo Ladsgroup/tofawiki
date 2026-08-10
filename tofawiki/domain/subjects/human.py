@@ -1,8 +1,15 @@
 import re
 
 from tofawiki.domain.subjects.unknown import UnknownSubject
-from tofawiki.util.translate_util import (FA_LETTERS, dater, en2fa, get_lang,
-                                          khoshgeler, linker, officefixer)
+from tofawiki.util.translate_util import (
+    FA_LETTERS,
+    dater,
+    en2fa,
+    get_lang,
+    khoshgeler,
+    linker,
+    officefixer,
+)
 
 BIRTH_DATE = 'birth_date'
 DEATH_DATE = 'death_date'
@@ -13,7 +20,7 @@ class HumanSubject(UnknownSubject):
     def __init__(self, service):
         super().__init__(service)
         self.stub_type = 'افراد'
-        self.medals = [u'۰', u'۰', u'۰']
+        self.medals = ['۰', '۰', '۰']
         self.national_teams = []
         self.clubs = ''
         self.awards = ''
@@ -23,17 +30,17 @@ class HumanSubject(UnknownSubject):
 
     def get_lead(self):
         occu_fixes = {
-            u"[[اختراع]]": u"[[اختراع|مخترع]]",
-            u"[[داستان کوتاه]]": u"نویسنده [[داستان کوتاه]]",
-            u"[[میلیاردره]]": u"[[میلیاردر]]",
+            "[[اختراع]]": "[[اختراع|مخترع]]",
+            "[[داستان کوتاه]]": "نویسنده [[داستان کوتاه]]",
+            "[[میلیاردره]]": "[[میلیاردر]]",
         }
         lang = get_lang(self.service.article.text.split("\n==")[0],
                         self.service.article.title().split(" (")[0])
-        text = "'''" + self.service.faname.split(" (")[0] + u"''' (" + lang + u"؛ "
+        text = "'''" + self.service.faname.split(" (")[0] + "''' (" + lang + "؛ "
         if not self.infobox.get(DEATH_DATE, '').strip():
-            text += u"زادهٔ "
+            text += "زادهٔ "
         birth_date = self.infobox.get(BIRTH_DATE, '')
-        if u"}}" in birth_date.replace("birth date and age", "birth date"):
+        if "}}" in birth_date.replace("birth date and age", "birth date"):
             text += "}}".join(
                 birth_date.lower().replace(
                     "birth date and age", "birth date").split(
@@ -42,8 +49,8 @@ class HumanSubject(UnknownSubject):
             text += birth_date.replace("birth date and age", "birth date")
         death_date = self.infobox.get(DEATH_DATE, '')
         if death_date:
-            text += u" – "
-            if u"}}" in death_date.replace("death date and age", "death date"):
+            text += " – "
+            if "}}" in death_date.replace("death date and age", "death date"):
                 text += "}}".join(death_date.lower().replace(
                     "death date and age", "death date").split(
                         "}}")[:])
@@ -51,63 +58,63 @@ class HumanSubject(UnknownSubject):
                 text = text + \
                     death_date.replace("death date and age", "death date")
         self.occupation = self.occupation.strip()
-        if not self.occupation and u"امپراتور" in self.service.faname:
-            self.occupation = u"امپراتور"
+        if not self.occupation and "امپراتور" in self.service.faname:
+            self.occupation = "امپراتور"
         if self.occupation.count("[") > self.occupation.count("]"):
-            self.occupation += u"]"
+            self.occupation += "]"
         for fix in occu_fixes:
             self.occupation = self.occupation.replace(fix, occu_fixes[fix])
-        text = text + u") " + self.occupation
+        text = text + ") " + self.occupation
         if self.infobox.get('nationality'):
-            text += u" اهل " + self.infobox['nationality']
+            text += " اهل " + self.infobox['nationality']
         if not self.infobox.get(DEATH_DATE, '').strip():
-            text += u" است. "
+            text += " است. "
         else:
-            text += u" بود. "
+            text += " بود. "
         years_active = self.infobox.get('years_active', '').strip()
-        if years_active and u"–" in years_active:
-            startyear = years_active.split(u"–")[0]
-            endyear = years_active.split(u"–")[1]
-            if len(startyear) == 4 and (len(endyear) == 4 or endyear == u"اکنون"):
-                text += u"وی "
-                if endyear == u"اکنون":
-                    text += u"از سال " + startyear + \
-                        u" میلادی تاکنون مشغول فعالیت بوده‌است. "
+        if years_active and "–" in years_active:
+            startyear = years_active.split("–")[0]
+            endyear = years_active.split("–")[1]
+            if len(startyear) == 4 and (len(endyear) == 4 or endyear == "اکنون"):
+                text += "وی "
+                if endyear == "اکنون":
+                    text += "از سال " + startyear + \
+                        " میلادی تاکنون مشغول فعالیت بوده‌است. "
                 else:
-                    text += u"بین سال‌های " + startyear + \
-                        u" تا " + endyear + u" میلادی فعالیت می‌کرد."
+                    text += "بین سال‌های " + startyear + \
+                        " تا " + endyear + " میلادی فعالیت می‌کرد."
         text = text + self.films()
         if self.awards:
             text += self.breaks + "وی همچنین برندهٔ جوایزی همچون " + \
-                khoshgeler(self.awards) + u" شده است."
+                khoshgeler(self.awards) + " شده است."
         elif self.awards2:
-            text += self.breaks + u" همچنین برندهٔ جوایزی همچون " + \
-                self.awards2 + u" شده است."
+            text += self.breaks + " همچنین برندهٔ جوایزی همچون " + \
+                self.awards2 + " شده است."
         if self.clubs:
-            text += self.breaks + u"از باشگاه‌هایی که در آن بازی کرده‌است می‌توان به " + \
-                khoshgeler(re.sub(r'\[\[تیم ملی.+?\]\]', '', self.clubs)) + u" اشاره کرد."
+            text += self.breaks + "از باشگاه‌هایی که در آن بازی کرده‌است می‌توان به " + \
+                khoshgeler(re.sub(r'\[\[تیم ملی.+?\]\]', '', self.clubs)) + " اشاره کرد."
         if self.national_teams:
             national_teams_text = ''
             if len(self.national_teams) == 1:
-                national_teams_text += u"\n\nوی همچنین در تیم ملی فوتبال " + \
-                    self.national_teams[0] + u" بازی کرده است."
+                national_teams_text += "\n\nوی همچنین در تیم ملی فوتبال " + \
+                    self.national_teams[0] + " بازی کرده است."
             else:
-                national_teams_text += self.breaks + u"وی همچنین در تیم‌های ملی فوتبال " + \
-                   khoshgeler(' '.join(self.national_teams)) + u" بازی کرده است."
+                national_teams_text += self.breaks + "وی همچنین در تیم‌های ملی فوتبال " + \
+                   khoshgeler(' '.join(self.national_teams)) + " بازی کرده است."
             national_teams_text = self.text_translator.translator(national_teams_text)
             national_teams_text = re.sub(r'\[\[تیم ملی فوتبال (.+?)\]\]',
                                          r'[[تیم ملی فوتبال \1|\1]]',
                                          national_teams_text)
             text += national_teams_text
-        if self.medals != [u'۰', u'۰', u'۰']:
-            text += self.breaks + u'وی در مسابقات کشوری و بین‌المللی در مجموع برندهٔ '
-            if self.medals[0] != u'۰':
-                text += self.medals[0] + u' [[مدال طلا]]، '
-            if self.medals[1] != u'۰':
-                text += self.medals[1] + u' [[مدال نقره]]، '
-            if self.medals[2] != u'۰':
-                text += self.medals[2] + u' [[مدال برنز]]، '
-            text = text[:-2] + u' شده‌است.'
+        if self.medals != ['۰', '۰', '۰']:
+            text += self.breaks + 'وی در مسابقات کشوری و بین‌المللی در مجموع برندهٔ '
+            if self.medals[0] != '۰':
+                text += self.medals[0] + ' [[مدال طلا]]، '
+            if self.medals[1] != '۰':
+                text += self.medals[1] + ' [[مدال نقره]]، '
+            if self.medals[2] != '۰':
+                text += self.medals[2] + ' [[مدال برنز]]، '
+            text = text[:-2] + ' شده‌است.'
 
         return text
 
@@ -152,48 +159,48 @@ class HumanSubject(UnknownSubject):
                         long_occupation = self.infobox[case]
                 if re.search(r'award|prize', case.lower()):
                     for awname in re.findall(r"\[\[(.+?)(?:\||\]\])", self.infobox[case]):
-                        awardstext += u"[[" + awname + u"]]"
+                        awardstext += "[[" + awname + "]]"
 
         self.date_cleaner(BIRTH_DATE)
         self.date_cleaner(DEATH_DATE)
         if "music" in self.infobox_title.lower():
-            long_occupation = u"موسیقی‌دان"
-            occupation = u"موسیقی‌دان"
+            long_occupation = "موسیقی‌دان"
+            occupation = "موسیقی‌دان"
         elif "military person" in self.infobox_title.lower():
-            long_occupation = u"فرد نظامی"
-            occupation = u"فرد نظامی"
+            long_occupation = "فرد نظامی"
+            occupation = "فرد نظامی"
         elif "officeholder" in self.infobox_title.lower():
-            long_occupation = u"سیاست‌مدار"
-            occupation = u"سیاست‌مدار"
+            long_occupation = "سیاست‌مدار"
+            occupation = "سیاست‌مدار"
         elif re.search(
                 r"(sportsperson|swim|football|soccer|rugby|tennis|cyclist|"
                 r"f1 driver|baseball|basketball| mlb| nba)",
                 self.infobox_title.lower()):
-            long_occupation = u"ورزشکار"
+            long_occupation = "ورزشکار"
             occupations = {
-                u"basketball": u"بازیکن بسکتبال",
-                u" nba": u"بازیکن بسکتبال",
-                u"football": u"بازیکن فوتبال",
-                u" mlb": u"بازیکن بیس‌بال",
-                u"baseball": u"بازیکن بیس‌بال",
-                u"f1 driver": u"اتومبیل‌ران فرمول ۱",
-                u"cyclist": u"دوچرخه‌سوار",
-                u"tennis": u"تنیس‌باز"}
+                "basketball": "بازیکن بسکتبال",
+                " nba": "بازیکن بسکتبال",
+                "football": "بازیکن فوتبال",
+                " mlb": "بازیکن بیس‌بال",
+                "baseball": "بازیکن بیس‌بال",
+                "f1 driver": "اتومبیل‌ران فرمول ۱",
+                "cyclist": "دوچرخه‌سوار",
+                "tennis": "تنیس‌باز"}
             for i in occupations:
                 if i in self.infobox_title.lower():
                     long_occupation = linker(occupations[i])
                     occupation = occupations[i]
-            if long_occupation == u"ورزشکار" and self.infobox.get('sport'):
-                long_occupation = u"ورزشکار " + linker(self.infobox['sport'])
+            if long_occupation == "ورزشکار" and self.infobox.get('sport'):
+                long_occupation = "ورزشکار " + linker(self.infobox['sport'])
         elif "adult biography" in self.infobox_title.lower():
-            long_occupation = u"بازیگر پورنوگرافی"
-            occupation = u"بازیگر پورنوگرافی"
+            long_occupation = "بازیگر پورنوگرافی"
+            occupation = "بازیگر پورنوگرافی"
         elif " saint" in self.infobox_title.lower():
-            long_occupation = u"قدیس مسیحی"
-            occupation = u"قدیس مسیحی"
+            long_occupation = "قدیس مسیحی"
+            occupation = "قدیس مسیحی"
         elif "scientist" in self.infobox_title.lower():
-            long_occupation = u"دانشمند"
-            occupation = u"دانشمند"
+            long_occupation = "دانشمند"
+            occupation = "دانشمند"
             fields = []
             if 101 in self.info:
                 fields = [
@@ -202,7 +209,7 @@ class HumanSubject(UnknownSubject):
             if not fields:
                 fields = [self.text_translator.translator(self.infobox.get('field', ''))]
             if fields:
-                long_occupation += u" در زمینه " + khoshgeler(fields[0])
+                long_occupation += " در زمینه " + khoshgeler(fields[0])
 
         if OCCUPATION in self.infobox:
             if '[[' not in self.infobox[OCCUPATION]:
@@ -213,7 +220,7 @@ class HumanSubject(UnknownSubject):
         if not long_occupation or not re.search(FA_LETTERS, long_occupation):
             long_occupation = self.occu(self.info[106], occupation)
 
-        awards = u""
+        awards = ""
         if 166 in self.info:
             awards_list = []
             for i in self.info[166]:
@@ -223,7 +230,7 @@ class HumanSubject(UnknownSubject):
             # Clean up duplicates
             awards_list = list(set(awards_list))
             awards = " ".join(awards_list).strip()
-        clubs = u""
+        clubs = ""
         if 54 in self.info:
             clubs_list = []
             for i in self.info[54]:
@@ -234,13 +241,13 @@ class HumanSubject(UnknownSubject):
         awardstext2 = ''
         awardstext = self.text_translator.translator(awardstext)
         for awname in re.findall(r"\[\[(.+?)(?:\||\]\])", awardstext):
-            if re.search(u"نشان|جایزه|مدال", awname):
+            if re.search("نشان|جایزه|مدال", awname):
                 awardstext2 += linker(awname)
         awardstext2 = khoshgeler(awardstext2)
 
         if self.infobox.get('years_active'):
             self.infobox['years_active'] = en2fa(
-                self.infobox['years_active']).replace("present", u"اکنون")
+                self.infobox['years_active']).replace("present", "اکنون")
         if self.info.get('official'):
             self.infobox['official'] = self.info['official']
         if 109 in self.info:
@@ -283,7 +290,7 @@ class HumanSubject(UnknownSubject):
             if case.lower() == 'playingstyle':
                 self.infobox[case] = re.sub(r'[Rr]ight-?handed', 'راست‌دست', self.infobox[case])
                 self.infobox[case] = re.sub(r'[Rr]ight-?handed', 'چپ‌دست', self.infobox[case])
-            self.infobox[case] = self.infobox[case].replace(u"(loan)", u"(قرضی)")
+            self.infobox[case] = self.infobox[case].replace("(loan)", "(قرضی)")
             if self.infobox[case].strip().startswith('→'):
                 self.infobox[case] = self.infobox[case].replace('→', '←')
             self.infobox[case] = re.sub(
@@ -341,24 +348,24 @@ class HumanSubject(UnknownSubject):
 
     def films(self):
         filmsandseries = self.wikidata_translator.getRefferedItems(self.service.item, 'P161')
-        explanation = u"از فیلم‌ها یا برنامه‌های تلویزیونی که وی در آن نقش داشته است می‌توان به "
+        explanation = "از فیلم‌ها یا برنامه‌های تلویزیونی که وی در آن نقش داشته است می‌توان به "
         film_text = self.breaks + explanation + " اشاره کرد."
-        text = u''
+        text = ''
         if filmsandseries:
             text = self.breaks + explanation
             films_count = 0
             for i in filmsandseries:
                 if i:
                     films_count += 1
-                    text += "''" + linker(i) + u"''، "
+                    text += "''" + linker(i) + "''، "
             if films_count > 2:
                 text = ']]''، و '.join(text[:-2].rsplit("]]''، ", 1))
             else:
                 text = text[:-2]
-            text += u" اشاره کرد."
+            text += " اشاره کرد."
         if not text == film_text:
             return text
-        return u''
+        return ''
 
     def occu(self, a, b):
         listoc = []
@@ -368,7 +375,7 @@ class HumanSubject(UnknownSubject):
                 if ff:
                     listoc.append(ff)
         if not listoc:
-            links = self.text_translator.translator(u"[[" + b.replace(", ", u"]][[") + u"]]")
+            links = self.text_translator.translator("[[" + b.replace(", ", "]][[") + "]]")
             for i in re.findall(r"\[\[(.+?)(?:\]\]|\|)", links):
                 if re.search(FA_LETTERS, i):
                     if i:
@@ -379,9 +386,9 @@ class HumanSubject(UnknownSubject):
         except IndexError:
             fff = None
         for i in listoc:
-            textg += u"[[" + i + u"]]، "
+            textg += "[[" + i + "]]، "
             if i == fff:
-                textg += u"و "
-        if textg.count(u"،") == 1:
-            textg = textg.replace(u"،", u"")
-        return textg[:-2] + u" "
+                textg += "و "
+        if textg.count("،") == 1:
+            textg = textg.replace("،", "")
+        return textg[:-2] + " "

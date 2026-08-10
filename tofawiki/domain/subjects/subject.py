@@ -1,4 +1,4 @@
-class Subject(object):
+class Subject:
 
     def get_lead(self):
         raise NotImplementedError

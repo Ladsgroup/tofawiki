@@ -5,13 +5,13 @@ WSGI server, e.g. ``gunicorn 'tofawiki.wsgi:create_app()'``.
 """
 import argparse
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from ..config import load_config
 from ..wsgi import create_app
 
 
-def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog='tofawiki dev_server_translation',
         description=__doc__,
@@ -30,7 +30,7 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: Optional[List[str]] = None) -> None:
+def main(argv: Optional[list[str]] = None) -> None:
     args = parse_args(argv)
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)

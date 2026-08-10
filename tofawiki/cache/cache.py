@@ -1,4 +1,4 @@
-class Cache(object):
+class Cache:
     def get_value(self, key):
         """Main function"""
         raise NotImplementedError

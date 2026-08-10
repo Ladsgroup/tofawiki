@@ -28,12 +28,12 @@ class TextTranslator:
         return text_see
 
     def catadder(self, text):
-        cats = u""
+        cats = ""
         res = self.link_translator(re.findall(r'\[\[([Cc]ategory:.+?)(?:\]\]|\|)', text))
         res = list(res.values())
         res.sort()
         for name in res:
-            cats = cats + u"\n[[" + name + "]]"
+            cats = cats + "\n[[" + name + "]]"
         return cats
 
     def translator_taki(self, text, strict=False):
@@ -42,8 +42,7 @@ class TextTranslator:
         for name in re.findall(r"\[\[(.+?)(?:\||\]\])", text):
             if self.cache and self.cache.get_value(cache_prefix + name):
                 res = self.cache.get_value(cache_prefix + name)
-                b = re.sub(r"\[\[%s(?:\|.+?)?\]\]" %
-                           re.escape(name), res, b)
+                b = re.sub(rf"\[\[{re.escape(name)}(?:\|.+?)?\]\]", res, b)
             else:
                 # TODO: Batch
                 params = {
@@ -53,7 +52,8 @@ class TextTranslator:
                     'prop': 'langlinks',
                     'lllang': 'fa'
                 }
-                query_res = pywikibot.data.api.Request(site=self.source, **params).submit()['query']['pages']
+                query_res = pywikibot.data.api.Request(
+                    site=self.source, **params).submit()['query']['pages']
                 for page_id in query_res:
                     langlinks = query_res[page_id].get('langlinks')
                 if not langlinks:
@@ -78,8 +78,8 @@ class TextTranslator:
         res = self.link_translator(names)
         for name in names:
             if name in res:
-                b = re.sub(r"\[\[%s(?:\|.+?)?\]\]" %
-                           re.escape(name), linker(res[name]), b)
+                b = re.sub(rf"\[\[{re.escape(name)}(?:\|.+?)?\]\]",
+                           linker(res[name]), b)
         return b
 
     def link_translator(self, batch):
@@ -132,14 +132,14 @@ class TextTranslator:
 
         try:
             query_res = pywikibot.data.api.Request(site=wikidata, **params).submit()
-        except:
+        except Exception:
             return {}
 
         matches_titles = {}
         entities = query_res.get('entities', {})
         endbName = self.source.dbName()
         fadbName = self.target.dbName()
-        for qid, entity in entities.items():
+        for entity in entities.values():
             if fadbName in entity.get('sitelinks', {}):
                 en_title = entity['sitelinks'][endbName]
                 fa_title = entity['sitelinks'][fadbName]
@@ -162,7 +162,7 @@ class TextTranslator:
         return res
 
     @staticmethod
-    def chunks(l, n):
-        """Yield successive n-sized chunks from l."""
-        for i in range(0, len(l), n):
-            yield l[i:i + n]
+    def chunks(seq, n):
+        """Yield successive n-sized chunks from seq."""
+        for i in range(0, len(seq), n):
+            yield seq[i:i + n]

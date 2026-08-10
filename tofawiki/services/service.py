@@ -1,4 +1,4 @@
-class Service(object):
+class Service:
     """Interface for running services."""
 
     def validate(self):

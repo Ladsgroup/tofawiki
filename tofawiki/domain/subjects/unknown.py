@@ -49,7 +49,7 @@ class UnknownSubject(Subject):
             for i in self.infobox:
                 i_test = i.replace('\n', '').replace('\t', '').strip()
                 if i_test not in self.infobox_exceptions:
-                    res += u"\n| " + i + u" = " + self.infobox[i]
+                    res += "\n| " + i + " = " + self.infobox[i]
             res += '\n}}'
         return self.text_translator.translator(res)
 
@@ -61,7 +61,7 @@ class UnknownSubject(Subject):
             self.extract_infobox()
             self.run_infobox_fixes()
             content = self.get_infobox() + '\n' + self.get_lead() + self.breaks + self.get_footer()
-        except:
+        except Exception:
             return {
                 'error': 'Unable to translate. Copy paste this for Amir: ' + traceback.format_exc()
             }
@@ -76,30 +76,30 @@ class UnknownSubject(Subject):
         entext = enpage.get()
         faname = self.service.faname
         text = self.text_translator.seealsoer(entext)
-        text += self.breaks + u"== منابع ==\n{{پانویس|چپ‌چین=بله}}"
+        text += self.breaks + "== منابع ==\n{{پانویس|چپ‌چین=بله}}"
         url = enpage.permalink().replace("&useskin=monobook", "")
-        text += u"\n*{{یادکرد-ویکی|پیوند =" + url + \
-                u"|عنوان = " + enpage.title().replace(u"_", u" ") + \
-                u"|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}\n"
+        text += "\n*{{یادکرد-ویکی|پیوند =" + url + \
+                "|عنوان = " + enpage.title().replace("_", " ") + \
+                "|زبان =انگلیسی|بازیابی ={{جا:الان|پیوند=نه}}}}\n"
 
         if (self.info[373] or self.info['twitter'] or self.info['facebook'] or
                 self.info['official'] or 434 in self.info):
             if self.info[373]:
-                text += u"\n{{-}}\n"
-            text += u"\n== پیوند به بیرون ==\n"
+                text += "\n{{-}}\n"
+            text += "\n== پیوند به بیرون ==\n"
             if self.info[373]:
-                text += u"{{انبار-رده}}\n"
+                text += "{{انبار-رده}}\n"
             if self.info['official']:
-                text += u"* {{رسمی|" + self.info['official'] + u"}}\n"
+                text += "* {{رسمی|" + self.info['official'] + "}}\n"
             if self.info['imdb']:
-                text += u"* {{IMDb name|" + self.info['imdb'] + u"}}\n"
+                text += "* {{IMDb name|" + self.info['imdb'] + "}}\n"
             if self.info['facebook']:
-                text += u"* {{facebook|" + self.info['facebook'] + u"}}\n"
+                text += "* {{facebook|" + self.info['facebook'] + "}}\n"
             if self.info['twitter']:
-                text += u"* {{twitter|" + self.info['twitter'] + u"}}\n"
+                text += "* {{twitter|" + self.info['twitter'] + "}}\n"
         if self.info['coord']:
             text += self.info['coord'][0] + "\n"
-        text += u"\n{{" + self.get_stub_type() + "-خرد}}" + self.breaks
+        text += "\n{{" + self.get_stub_type() + "-خرد}}" + self.breaks
         for i in self.info:
             if i in authority_controls:
                 text += "{{داده‌های کتابخانه‌ای}}\n"
@@ -107,13 +107,13 @@ class UnknownSubject(Subject):
         text = text + sortcat(entext,
                               enpage.title().split(" (")[0], faname.split(" (")[0])
         text = text + self.text_translator.catadder(entext)
-        return text + self.breaks + u"[[en:%s]]" % enpage.title()
+        return text + self.breaks + f"[[en:{enpage.title()}]]"
 
     @staticmethod
     def run_fixes(text):
-        final_fixes = {u"]], ": u"]]، ",
-                       u"]] and [[": u"]] و [[",
-                       u"]], and [[": u"]]، و [[", }
+        final_fixes = {"]], ": "]]، ",
+                       "]] and [[": "]] و [[",
+                       "]], and [[": "]]، و [[", }
         for fix in final_fixes:
             text = text.replace(fix, final_fixes[fix])
         return text

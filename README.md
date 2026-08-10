@@ -37,6 +37,19 @@ To build a wheel and an sdist:
     $ pip install build
     $ python -m build
 
+#### Linting
+Linting is done with [ruff](https://docs.astral.sh/ruff/), configured under
+`[tool.ruff]` in `pyproject.toml` (it replaced flake8, whose config used to live
+in `setup.cfg`).
+
+    $ pip install ruff
+    $ ruff check .
+    $ ruff check --fix .
+
+The enabled rule sets are `E`/`F`/`W` (the pycodestyle and pyflakes checks
+flake8 ran), plus `I` for import sorting, `UP` for Python-version upgrades and
+`B` for bugbear checks.
+
 ### Starting the dev server
 
     $ tofawiki dev_server_translation --config config/

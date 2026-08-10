@@ -11,7 +11,7 @@ class WikidataTranslator:
         self.repo = repo
         self.cache = cache
         self.endpoint_url = "https://query.wikidata.org/sparql"
-        self.user_agent = "Tofawiki Python/%s.%s" % (sys.version_info[0], sys.version_info[1])
+        self.user_agent = f"Tofawiki Python/{sys.version_info[0]}.{sys.version_info[1]}"
 
     def data2fa(self, number, strict=False, loose=False):
         if not number:
@@ -26,14 +26,15 @@ class WikidataTranslator:
         cache_key += str(number)
         if self.cache and self.cache.get_value(cache_key):
             return self.cache.get_value(cache_key)
-        item_id = 'Q%d' % int(number)
+        item_id = f"Q{int(number)}"
         params = {
             'action': 'wbgetentities',
             'ids': item_id,
             'props': 'sitelinks|labels',
             'languages': 'fa|en'
         }
-        query_res = pywikibot.data.api.Request(site=self.repo, **params).submit()['entities'][item_id]
+        query_res = pywikibot.data.api.Request(
+            site=self.repo, **params).submit()['entities'][item_id]
         if query_res.get('sitelinks', {}).get('fawiki'):
             name = query_res['sitelinks']['fawiki']['title']
             if self.cache:
@@ -54,7 +55,6 @@ class WikidataTranslator:
         return ''
 
     def getRefferedItems(self, item, property_):
-        res = []
         query = """SELECT ?item ?itemLabel
 WHERE
 {
@@ -65,7 +65,8 @@ WHERE
         sparql.setQuery(query)
         sparql.setReturnFormat(JSON)
         result = []
-        for case in [i['itemLabel']['value'] for i in sparql.query().convert()["results"]["bindings"]]:
+        bindings = sparql.query().convert()["results"]["bindings"]
+        for case in [i['itemLabel']['value'] for i in bindings]:
             if re.search(r'^Q\d+$', case):
                 continue
             result.append(case)

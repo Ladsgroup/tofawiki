@@ -1,6 +1,7 @@
 import logging
 import traceback
-from typing import Any, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any, Optional
 
 from flask import Blueprint, Flask, jsonify
 from werkzeug.exceptions import HTTPException

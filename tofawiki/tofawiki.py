@@ -38,7 +38,7 @@ def main():
                                package="tofawiki")
     except ImportError:
         sys.stderr.write(traceback.format_exc())
-        sys.stderr.write("Could not find utility {0}.\n".format(module_name))
+        sys.stderr.write(f"Could not find utility {module_name}.\n")
         sys.exit(1)
 
     module.main(sys.argv[2:])

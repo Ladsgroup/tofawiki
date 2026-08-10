@@ -1,7 +1,8 @@
 """Loading of the YAML configuration files."""
 import os
+from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Any, Dict, Iterable, Mapping, Optional, Union
+from typing import Any, Optional, Union
 
 import yaml
 
@@ -11,7 +12,7 @@ CONFIG_ENV_VAR = "TOFAWIKI_CONFIG"
 REPO_CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
 
 
-def deep_merge(base: Mapping[str, Any], other: Mapping[str, Any]) -> Dict[str, Any]:
+def deep_merge(base: Mapping[str, Any], other: Mapping[str, Any]) -> dict[str, Any]:
     """Merge ``other`` into ``base`` recursively, without mutating either."""
     merged = dict(base)
     for key, value in other.items():
@@ -23,9 +24,9 @@ def deep_merge(base: Mapping[str, Any], other: Mapping[str, Any]) -> Dict[str, A
     return merged
 
 
-def load_files(paths: Iterable[Union[str, Path]]) -> Dict[str, Any]:
+def load_files(paths: Iterable[Union[str, Path]]) -> dict[str, Any]:
     """Load YAML documents and merge them, later files winning."""
-    config: Dict[str, Any] = {}
+    config: dict[str, Any] = {}
     for path in paths:
         with open(path, encoding="utf-8") as f:
             document = yaml.safe_load(f) or {}
@@ -55,7 +56,7 @@ def find_config_dir(directory: Optional[Union[str, Path]] = None) -> Path:
     )
 
 
-def load_config(directory: Optional[Union[str, Path]] = None) -> Dict[str, Any]:
+def load_config(directory: Optional[Union[str, Path]] = None) -> dict[str, Any]:
     """Load and merge every ``*.yaml`` file in the config directory."""
     config_dir = find_config_dir(directory)
     paths = sorted(config_dir.glob("*.yaml"))
