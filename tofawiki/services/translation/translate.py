@@ -63,7 +63,7 @@ class Translate(Service):
 
     @staticmethod
     def normalize_fa(faname):
-        return re.sub("([‌۱۲۳۴۵۶۷۸۹۰\)\(ادذرزژو])‌", "\1", faname).replace(
+        return re.sub(r"([‌۱۲۳۴۵۶۷۸۹۰\)\(ادذرزژو])‌", "\1", faname).replace(
             u"ي", u"ی").replace(u"ك", u"ک")
 
     def get_instances(self):

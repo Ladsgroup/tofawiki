@@ -1,3 +1,2 @@
 include LICENSE README.md requirements.txt
-recursive-include wikilabels/wsgi/templates *
-recursive-include wikilabels/wsgi/static *
+recursive-include config *.yaml

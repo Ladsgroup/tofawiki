@@ -135,7 +135,7 @@ class HumanSubject(UnknownSubject):
             self.run_sport_fixes()
         else:
             for case in self.infobox:
-                if re.search("term_?(?:start|end)\d*", case):
+                if re.search(r"term_?(?:start|end)\d*", case):
                     self.infobox[case] = dater(self.infobox[case])
                 if "order" in case:
                     self.infobox[case] = en2fa(
@@ -290,7 +290,7 @@ class HumanSubject(UnknownSubject):
                 r"\[\[(تیم ملی فوتبال )(?:زنان )?(.+?)\]\]", r"[[\1\2|\2]]", self.infobox[case])
             self.infobox[case] = re.sub(
                 r"\[\[(باشگاه فوتبال )(?:زنان )?(.+?)\]\]", r"[[\1\2|\2]]", self.infobox[case])
-            if re.findall("(?:national|youth)?(?:years|caps|goals)\d\d?", case):
+            if re.findall(r"(?:national|youth)?(?:years|caps|goals)\d\d?", case):
                 self.infobox[case] = en2fa(self.infobox[case])
             self.infobox[case] = re.sub(
                 r'(\{\{ *?Medal(?:Gold|Silver|Bronze) *?\|(.+?)\| *?)[tT]eam',
@@ -369,7 +369,7 @@ class HumanSubject(UnknownSubject):
                     listoc.append(ff)
         if not listoc:
             links = self.text_translator.translator(u"[[" + b.replace(", ", u"]][[") + u"]]")
-            for i in re.findall("\[\[(.+?)(?:\]\]|\|)", links):
+            for i in re.findall(r"\[\[(.+?)(?:\]\]|\|)", links):
                 if re.search(FA_LETTERS, i):
                     if i:
                         listoc.append(i)

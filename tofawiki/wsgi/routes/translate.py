@@ -1,23 +1,23 @@
-import json
+from typing import Any, Mapping
 
-from flask import Response
+from flask import Blueprint, Response, jsonify
 
 from ...services.translation.translate import Translate
 
 
-def configure(bp, config):
+def configure(bp: Blueprint, config: Mapping[str, Any]) -> Blueprint:
 
     @bp.route('/translate/<wiki>/')
-    def with_wiki(wiki):
+    def with_wiki(wiki: str) -> str:
         return 'Give me article name please'
 
     @bp.route('/translate/<wiki>/<article>/<faname>')
-    def translation_service(wiki, article, faname):
+    def translation_service(wiki: str, article: str, faname: str) -> Response:
+        wiki_config = config.get(wiki)
+        if not isinstance(wiki_config, Mapping) or 'code_lang' not in wiki_config:
+            return jsonify({'error': f'Unknown wiki: {wiki}'})
         # We use disposable services, we do caching other ways
         service = Translate(wiki, article, faname, config)
-        resp = Response(json.dumps(service.run()),
-                        mimetype="application/json")
-        resp.headers['Access-Control-Allow-Origin'] = '*'
-        return resp
+        return jsonify(service.run())
 
     return bp

@@ -1,8 +1,6 @@
-Flask
-Flask-Jsonpify
-pywikibot
-docopt
+Flask>=3.0
+pywikibot>=9.0
 sparqlwrapper
-yamlconf
 jinja2
+PyYAML
 redis

@@ -30,7 +30,7 @@ def linker(a):
 def khoshgeler(a):
     if not a:
         return a
-    rerkhosh = re.compile("\[\[(.+?)(?:\]\]|\|)")
+    rerkhosh = re.compile(r"\[\[(.+?)(?:\]\]|\|)")
     textg = u""
     listoc = rerkhosh.findall(a)
     try:
@@ -97,7 +97,7 @@ def get_lang(a, b):
             continue
         c.append(line)
     a = '\n'.join(c)
-    if re.search(u"\{\{lang(-|\|)", a):
+    if re.search(r"\{\{lang(-|\|)", a):
         return u"{{lang" + a.split("{{lang")[1].split("}}")[0] + u"}}"
     else:
         return u"{{lang-en|" + b + u"}}"

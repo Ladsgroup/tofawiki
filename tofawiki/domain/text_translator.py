@@ -39,10 +39,10 @@ class TextTranslator:
     def translator_taki(self, text, strict=False):
         b = text
         cache_prefix = 'translate:fawiki:enwiki:linktrans:'
-        for name in re.findall("\[\[(.+?)(?:\||\]\])", text):
+        for name in re.findall(r"\[\[(.+?)(?:\||\]\])", text):
             if self.cache and self.cache.get_value(cache_prefix + name):
                 res = self.cache.get_value(cache_prefix + name)
-                b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
+                b = re.sub(r"\[\[%s(?:\|.+?)?\]\]" %
                            re.escape(name), res, b)
             else:
                 # TODO: Batch
@@ -74,11 +74,11 @@ class TextTranslator:
         if not text:
             return ''
         b = text
-        names = re.findall("\[\[(.+?)(?:\||\]\])", text)
+        names = re.findall(r"\[\[(.+?)(?:\||\]\])", text)
         res = self.link_translator(names)
         for name in names:
             if name in res:
-                b = re.sub(u"\[\[%s(?:\|.+?)?\]\]" %
+                b = re.sub(r"\[\[%s(?:\|.+?)?\]\]" %
                            re.escape(name), linker(res[name]), b)
         return b
 

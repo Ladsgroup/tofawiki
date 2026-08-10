@@ -161,5 +161,5 @@ class UnknownSubject(Subject):
         for case in self.infobox:
             if case in ['name', 'title']:
                 self.infobox[case] = self.service.faname
-            if re.search("term_?(?:start|end)\d*", case):
+            if re.search(r"term_?(?:start|end)\d*", case):
                 self.infobox[case] = dater(self.infobox[case])
