@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import unquote
 
 from flask import Blueprint, Response, jsonify
 
@@ -14,6 +15,9 @@ def configure(bp: Blueprint, config: Mapping[str, Any]) -> Blueprint:
 
     @bp.route('/translate/<wiki>/<article>/<faname>')
     def translation_service(wiki: str, article: str, faname: str) -> Response:
+        article = unquote(article)
+        faname = unquote(faname)
+
         wiki_config = config.get(wiki)
         if not isinstance(wiki_config, Mapping) or 'code_lang' not in wiki_config:
             return jsonify({'error': f'Unknown wiki: {wiki}'})
