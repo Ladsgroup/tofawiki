@@ -17,19 +17,24 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Topic :: Utilities",
 ]
-# version comes from tofawiki/__init__.py, dependencies from requirements.txt
-dynamic = ["version", "dependencies"]
+dependencies = [
+    "Flask>=3.0",
+    "requests>=2.28",
+    "mwparserfromhell>=0.6",
+    "sparqlwrapper",
+    "jinja2",
+    "PyYAML",
+    "redis",
+]
+# version comes from tofawiki/__init__.py
+dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/Ladsgroup/tofawiki"
 Source = "https://github.com/Ladsgroup/tofawiki"
 
-[project.scripts]
-tofawiki = "tofawiki.tofawiki:main"
-
 [tool.setuptools.dynamic]
 version = {attr = "tofawiki.__version__"}
-dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.packages.find]
 include = ["tofawiki*"]

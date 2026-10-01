@@ -27,10 +27,9 @@ or, for development, an editable install:
 
     $ pip install -e .
 
-Runtime dependencies are declared in `requirements.txt`, which `pyproject.toml`
-reads, so `pip install -r requirements.txt` and the package metadata cannot
-drift apart. The version is read from `tofawiki/__init__.py`, so that is the
-only place to bump it for a release.
+Runtime dependencies are declared under `[project]` in `pyproject.toml`; there
+is no `setup.py` or `requirements.txt`. The version is read from
+`tofawiki/__init__.py`, so that is the only place to bump it for a release.
 
 To build a wheel and an sdist:
 
@@ -72,11 +71,14 @@ flake8 ran), plus `I` for import sorting, `UP` for Python-version upgrades and
 `B` for bugbear checks.
 
 ### Starting the dev server
+Use Flask's own CLI, which finds the `create_app` factory in `tofawiki.wsgi`:
 
-    $ tofawiki dev_server_translation --config config/
+    $ flask --app tofawiki.wsgi run --debug --port 8080
 
-Useful flags: `--host`, `--port` (default 8080), `--ssl`, `--verbose`. The dev
-server binds to localhost only; pass `--host 0.0.0.0` to expose it.
+Point it at another config directory with `TOFAWIKI_CONFIG=path/to/config`.
+The usual `flask run` flags apply: `--host` (localhost by default; pass
+`--host 0.0.0.0` to expose it), `--port` (default 5000), and `--cert adhoc` for
+HTTPS (needs `cryptography`).
 
 ## See also
 * [WP:tofawiki](https://fa.wikipedia.org/wiki/%D9%88%DB%8C%DA%A9%DB%8C%E2%80%8C%D9%BE%D8%AF%DB%8C%D8%A7:%D8%AA%D9%88%D9%81%D8%A7%D9%88%DB%8C%DA%A9%DB%8C)
