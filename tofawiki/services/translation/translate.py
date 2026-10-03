@@ -19,15 +19,6 @@ class Translate(Service):
         self.item = None
 
     def validate(self):
-        fapage = Page(Site('fa'), self.faname)
-        try:
-            fapage.get()
-        except NoPageError:
-            pass
-        except IsRedirectPageError:
-            return {'error': 'Article in Perisan Wikipedia exist'}
-        else:
-            return {'error': 'Article in Perisan Wikipedia exist'}
         if self.article.isRedirectPage():
             self.article = self.article.getRedirectTarget()
             # Just once for goodness sake
@@ -38,6 +29,22 @@ class Translate(Service):
             self.article.get()
         except NoPageError:
             return {'error': 'Article in English Wikipedia does not exist'}
+
+        # The Persian name may come without its namespace; check the category,
+        # not the article with the same name.
+        if (self.article.namespace() == 14
+                and not re.match(r'(رده|Category)\s*:', self.faname, re.I)):
+            self.faname = 'رده:' + self.faname
+        fapage = Page(Site('fa'), self.faname)
+        try:
+            fapage.get()
+        except NoPageError:
+            pass
+        except IsRedirectPageError:
+            return {'error': 'Article in Perisan Wikipedia exist'}
+        else:
+            return {'error': 'Article in Perisan Wikipedia exist'}
+
         try:
             self.item = ItemPage.fromPage(self.article)
             self.item.get()
@@ -63,7 +70,7 @@ class Translate(Service):
 
     @staticmethod
     def normalize_fa(faname):
-        return re.sub(r"([‌۱۲۳۴۵۶۷۸۹۰\)\(ادذرزژو])‌", "\1", faname).replace(
+        return re.sub(r"([‌۱۲۳۴۵۶۷۸۹۰\)\(ادذرزژو])‌", r"\1", faname).replace(
             "ي", "ی").replace("ك", "ک")
 
     def get_instances(self):
